@@ -94,6 +94,7 @@
 (:encoding-test "893921" "M)c^" 3)
 (:encoding-test "349d90" "1nB^" 3)
 (:encoding-test "330ac5" "1CD)" 3)
+(:encoding-test "00000000" "z" 4)
 (:encoding-test "fedbb58b" "rnFi=" 4)
 (:encoding-test "c0d4bbe4" "^sp!W" 4)
 (:encoding-test "75be45c0" "FhU;[" 4)
