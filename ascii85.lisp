@@ -46,3 +46,58 @@
 (defmethod encoding-tools ((format (eql :ascii85)))
   (values #'encode-octets-ascii85 #'encoded-length-ascii85
           *ascii85-encode-table*))
+
+(defvar *ascii85-decode-table* (make-decode-table *ascii85-encode-table*))
+(declaim (type decode-type *ascii85-decode-table*))
+
+(defun decoded-length-ascii85 (length)
+  ;; FIXME: There's nothing smart we can do without scanning the string.
+  ;; We have to assume the worst case, that all the characters in the
+  ;; string are #\z.
+  (* length 5))
+
+(defun decode-octets-ascii85 (string start end length table writer)
+  (declare (type index start end))
+  (declare (type function writer))
+  (declare (type decode-table table))
+  (flet ((do-decode (transform)
+           (do ((i 0)
+                (acc 0))
+               ((>= start end)
+                (unless (zerop i)
+                  (when (= i 1)
+                    (error "corrupt ascii85 group"))
+                  (dotimes (j (- 5 i))
+                    (setf acc (+ (* acc 85) 84)))
+                  (dotimes (j (1- i))
+                    (funcall writer (ldb (byte 8 (* (- 3 j) 8)) acc)))))
+             (cond
+               ((>= i 5)
+                (unless (< acc (ash 1 32))
+                  (error "invalid ascii85 sequence"))
+                (dotimes (i 4)
+                  (funcall writer (ldb (byte 8 (* (- 3 i) 8)) acc)))
+                (setf i 0
+                      acc 0))
+               (t
+                (let* ((b (funcall transform (aref string start)))
+                       (d (dtref table b)))
+                  (incf start)
+                  (cond
+                    ((= b #.(char-code #\z))
+                     (unless (zerop i)
+                       (error "z found in the middle of an ascii85 group"))
+                     (dotimes (i 4)
+                       (funcall writer 0)))
+                    ((= d +dt-invalid+)
+                     (error "invalid ascii85 character ~X" b))
+                    (t
+                     (incf i)
+                     (setf acc (+ (* acc 85) d))))))))))
+    (declare (inline do-decode))
+    (decode-dispatch string #'do-decode)))
+
+(defmethod decoding-tools ((format (eql :ascii85)) &key case-fold map01)
+  (declare (ignorable case-fold map01))
+  (values #'decode-octets-ascii85 #'decoded-length-ascii85
+          *ascii85-decode-table*))
