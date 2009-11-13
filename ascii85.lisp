@@ -2,7 +2,8 @@
 
 (cl:in-package :binascii)
 
-(defvar *ascii85-encode-table* "")
+(defvar *ascii85-encode-table*
+  #.(coerce "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstu" 'simple-base-string))
 
 (defun encoded-length-ascii85 (count)
   "Return the number of characters required to encode COUNT octets in Ascii85."
