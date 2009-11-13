@@ -1,0 +1,9 @@
+;;; Test vectors from RFC 4648.
+
+(:encoding-ascii-test "" "")
+(:encoding-ascii-test "f" "66")
+(:encoding-ascii-test "fo" "666F")
+(:encoding-ascii-test "foo" "666F6F")
+(:encoding-ascii-test "foob" "666F6F62")
+(:encoding-ascii-test "fooba" "666F6F6261")
+(:encoding-ascii-test "foobar" "666F6F626172")

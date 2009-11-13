@@ -1,0 +1,9 @@
+;;; Test vectors from RFC 4648.
+
+(:encoding-ascii-test "" "")
+(:encoding-ascii-test "f" "CO======")
+(:encoding-ascii-test "fo" "CPNG====")
+(:encoding-ascii-test "foo" "CPNMU===")
+(:encoding-ascii-test "foob" "CPNMUOG=")
+(:encoding-ascii-test "fooba" "CPNMUOJ1")
+(:encoding-ascii-test "foobar" "CPNMUOJ1E8======")
