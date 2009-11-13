@@ -48,7 +48,7 @@
           *ascii85-encode-table*))
 
 (defvar *ascii85-decode-table* (make-decode-table *ascii85-encode-table*))
-(declaim (type decode-type *ascii85-decode-table*))
+(declaim (type decode-table *ascii85-decode-table*))
 
 (defun decoded-length-ascii85 (length)
   ;; FIXME: There's nothing smart we can do without scanning the string.
