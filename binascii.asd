@@ -13,6 +13,7 @@
   :components ((:static-file "LICENSE")
                (:file "package")
                (:file "octets" :depends-on ("package"))
+               (:file "ascii85" :depends-on ("octets"))
                (:file "base85" :depends-on ("octets"))
                (:file "base64" :depends-on ("octets"))
                (:file "base32" :depends-on ("octets"))
@@ -37,6 +38,7 @@
                         :components
                         ((:file "rt")
                          (:file "tests")
+                         (:test-vector-file "ascii85")
                          (:test-vector-file "base85")
                          (:test-vector-file "base64")
                          (:test-vector-file "base32")
