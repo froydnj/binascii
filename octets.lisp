@@ -40,7 +40,7 @@ FORMAT."))
     ((or (equal element-type '(unsigned-byte 8))
          (and (subtypep element-type '(unsigned-byte 8))
               (subtypep '(unsigned-byte 8) element-type)))
-     '(unsigned-byte 8))
+     'octet)
     (t
      (when errorp
        (error "Unsupported element-type ~A" element-type)))))
@@ -73,7 +73,7 @@ FORMAT."))
        (error "Cannot output to a string with ~A :ELEMENT-TYPE" element-type))
      (values #'(lambda (c) (vector-push-extend c destination)) nil))
     ((array (unsigned-byte 8) (*))
-     (unless (equal element-type '(unsigned-byte 8))
+     (unless (eq element-type 'octet)
        (error "Cannot output to an octet vector with ~A :ELEMENT-TYPE" element-type))
      (values #'(lambda (c) (vector-push-extend (char-code c) destination)) nil))))
 
