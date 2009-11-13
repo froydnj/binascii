@@ -10,7 +10,8 @@
   :author "Nathan Froyd <froydnj@gmail.com>"
   :maintainer "Nathan Froyd <froydnj@gmail.com>"
   :description "A library of ASCII encoding schemes for binary data"
-  :components ((:file "package")
+  :components ((:static-file "LICENSE")
+               (:file "package")
                (:file "octets" :depends-on ("package"))
                (:file "base85" :depends-on ("octets"))
                (:file "base64" :depends-on ("octets"))
