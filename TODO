@@ -1,0 +1,29 @@
+-*- mode: org -*-
+
+* fix ascii85 encoding
+Must SHRINK-VECTOR on NIL destination in case we encoded 'z'.
+* line-breaking encoded output
+This should be easy; just pass a slightly different closure into this
+main encoding function.
+* compiler macros for optimizing constant-format versions of encode/decode
+The trick will be to do this without adding too much bloat.  Will
+probably only do this for a NIL destination, as that's the case where we
+have the most to win from inlining the writer closure.
+* testing
+** separate encode/decode tests
+** tests for encoding to octet vectors
+** tests for encoding to streams
+** tests for encoding to fill-pointered things
+** tests for decoding strings
+** tests for decoding to fill-pointered things
+** tests for decoding to streams
+Going to be hard because there's not a standard interface for octet streams.
+* still not sure the decoding interface is right
+Trying to do minimal allocation; might have to just suck it up and
+admit that we are going to over-allocate fairly often.
+
+Especially in the ascii85 case, over-allocation is just a fact of life.
+* ignoring whitespace when decoding
+We are definitely going to over-allocate if we permit whitespace.
+* other formats
+Python's binascii module has a few we might consider adding.
