@@ -168,6 +168,23 @@
    (writer :reader writer :initarg :writer)))
 
 (defun make-encoding-stream (destination format &key (element-type 'base-char))
+  "Return a stream that encodes octets written to it according to FORMAT and
+writes the results to DESTINATION.
+
+If DESTINATION is a STREAM, then the result is written to DESTINATION using
+WRITE-CHAR or WRITE-BYTE as chosen by ELEMENT-TYPE.
+
+If ELEMENT-TYPE is a subtype of CHARACTER, then DESTINATION may also be a
+string with a fill pointer.  The result is written to the string as if by use
+of VECTOR-PUSH-EXTEND.  Similarly, if ELEMENT-TYPE is (UNSIGNED-BYTE 8) or an
+equivalent type, then DESTINATION may be an octet vector with a fill pointer.
+
+The advantage of using this versus ENCODE-OCTETS is that ENCODE-OCTETS
+is only useful if you have the entire entity to be encoded available.
+With a stream, you can write the results incrementally, thereby saving
+memory. Please note that you do have to call CLOSE, FINISH-OUTPUT, or
+FORCE-OUTPUT once you are done encoding data so that any buffered input
+may be encoded appropriately."
   (multiple-value-bind (encode-fun length-fun table) (encoding-tools format)
     (let ((canonical-element-type (canonicalize-element-type element-type)))
       ;; FIXME: is it worth supporting this case and saving the user a
