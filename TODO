@@ -1,5 +1,9 @@
 -*- mode: org -*-
 
+* add documentation for the library
+* add decoding gray streams
+Hard because we really want to decode groups at a time.  But ascii85 screws
+that paradigm up with variable-sized groups.
 * fix ascii85 encoding
 Must SHRINK-VECTOR on NIL destination in case we encoded 'z'.
 * line-breaking encoded output
