@@ -118,45 +118,45 @@
    (error "octet streams not supported in this implementation")))
 )
 
-(defmacro define-stream-write-sequence (specializer &body body)
+(defmacro define-stream-write-sequence (specializer type &body body)
   #+sbcl
   `(defmethod sb-gray:stream-write-sequence ((stream ,specializer) seq &optional (start 0) end)
-     (cond
-       ((not (typep seq '(simple-array (unsigned-byte 8) (*))))
-        (call-next-method))
-       (t
+     (typecase seq
+       (,type
         (let ((end (or end (length seq))))
-          ,@body))))
+          ,@body))
+       (t
+        (call-next-method))))
   #+cmu
   `(defmethod ext:stream-write-sequence ((stream ,specializer) seq &optional (start 0) end)
-     (cond
-       ((not (typep seq '(simple-array (unsigned-byte 8) (*))))
-        (call-next-method))
-       (t
+     (typecase seq
+       (,type
         (let ((end (or end (length seq))))
-          ,@body))))
+          ,@body))
+       (t
+        (call-next-method))))
   #+allegro
   `(defmethod stream:stream-write-sequence ((stream ,specializer) seq &optional (start 0) end)
-     (cond
-       ((not (typep seq '(simple-array (unsigned-byte 8) (*))))
-        (call-next-method))
-       (t
+     (typecase seq
+       (,type
         (let ((end (or end (length seq))))
-          ,@body))))
+          ,@body))
+       (t
+        (call-next-method))))
   #+openmcl
   `(defmethod ccl:stream-write-vector ((stream ,specializer) seq start end)
-     (cond
-       ((not (typep seq '(simple-array (unsigned-byte 8) (*))))
-        (call-next-method))
+     (typecase seq
+       (,type
+        ,@body)
        (t
-        ,@body)))
+        (call-next-method))))
   #+lispworks
   `(defmethod stream:stream-write-sequence ((stream ,specializer) seq start end)
-     (cond
-       ((not (typep seq '(simple-array (unsigned-byte 8) (*))))
-        (call-next-method))
+     (typecase seq
+       (,type
+        ,@body)
        (t
-        ,@body))))
+        (call-next-method)))))
 
 ;;; encoding streams
 
@@ -195,7 +195,7 @@
                        :initial-element byte)))
     (write-sequence v stream)))
 
-(define-stream-write-sequence encoding-stream
+(define-stream-write-sequence encoding-stream (simple-array (unsigned-byte 8) (*))
   (loop with buffer = (buffer stream)
      with index = (index stream)
      with chunk-size = (length buffer)
