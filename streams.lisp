@@ -161,8 +161,7 @@
 ;;; encoding streams
 
 (defclass encoding-stream (#.*binary-output-stream-class*)
-  ((wrapped :reader wrapped :initarg :wrapped)
-   (buffer :reader buffer :initarg :buffer)
+  ((buffer :reader buffer :initarg :buffer)
    (index :accessor index :initform 0)
    (encode-fun :reader encode-fun :initarg :encode-fun)
    (encode-table :reader encode-table :initarg :encode-table)
@@ -171,6 +170,8 @@
 (defun make-encoding-stream (destination format &key (element-type 'base-char))
   (multiple-value-bind (encode-fun length-fun table) (encoding-tools format)
     (let ((canonical-element-type (canonicalize-element-type element-type)))
+      ;; FIXME: is it worth supporting this case and saving the user a
+      ;; smidgen of coding?
       (when (null destination)
         (case canonical-element-type
           ((character base-char)
@@ -185,7 +186,6 @@
           (determine-encoding-writer destination 0 canonical-element-type)
         (declare (ignore return-value))
         (make-instance 'encoding-stream
-                       :wrapped destination
                        :encode-fun encode-fun
                        :encode-table table
                        :writer writer)))))
