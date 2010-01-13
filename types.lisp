@@ -4,6 +4,10 @@
 
 (deftype index () '(mod #.array-dimension-limit))
 
+(deftype simple-octet-vector (&optional (length '*))
+  #+(or sbcl cmu) `(simple-array (unsigned-byte 8) (,length))
+  #-(or sbcl cmu) `(array (unsigned-byte 8) (,length)))
+
 (defun required-argument ()
   (error "Required argument not provided"))
 
