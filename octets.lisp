@@ -157,6 +157,18 @@ octet vector with a fill pointer."
   (string->octets (required-argument) :read-only t)
   (octets->octets (required-argument) :read-only t))
 
+(declaim (inline array-data-and-offsets))
+(defun array-data-and-offsets (v start end)
+  "Like ARRAY-DISPLACEMENT, only more useful."
+  #+sbcl
+  (sb-kernel:with-array-data ((v v) (start start) (end end))
+    (values v start end))
+  #+cmu
+  (lisp::with-array-data ((v v) (start start) (end end))
+    (values v start end))
+  #-(or sbcl cmu)
+  (values v start (or end (length v))))
+
 (defun decode-octets (destination string format
                       &key (start 0) end decoded-length case-fold map01
                       &allow-other-keys)
