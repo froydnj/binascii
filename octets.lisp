@@ -2,8 +2,6 @@
 
 (cl:in-package :binascii)
 
-(deftype index () '(mod #.array-dimension-limit))
-
 (defgeneric encoding-tools (format)
   (:documentation "Return three values: the basic encoding function for
 FORMAT, an encoded-length function for FORMAT, and an encoding table for

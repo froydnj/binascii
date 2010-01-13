@@ -12,7 +12,8 @@
   :description "A library of ASCII encoding schemes for binary data"
   :components ((:static-file "LICENSE")
                (:file "package")
-               (:file "octets" :depends-on ("package"))
+               (:file "types" :depends-on ("package"))
+               (:file "octets" :depends-on ("types"))
                (:file "ascii85" :depends-on ("octets"))
                (:file "base85" :depends-on ("octets"))
                (:file "base64" :depends-on ("octets"))
