@@ -32,3 +32,16 @@ Especially in the ascii85 case, over-allocation is just a fact of life.
 We are definitely going to over-allocate if we permit whitespace.
 * other formats
 Python's binascii module has a few we might consider adding.
+* convert to async API
+** encode
+*** TODO base16
+*** TODO base32
+*** TODO base64
+*** TODO base85
+*** TODO ascii85
+** decode
+*** TODO base16
+*** TODO base32
+*** TODO base64
+*** TODO base85
+*** TODO ascii85
