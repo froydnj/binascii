@@ -28,6 +28,13 @@ Trying to do minimal allocation; might have to just suck it up and
 admit that we are going to over-allocate fairly often.
 
 Especially in the ascii85 case, over-allocation is just a fact of life.
+* figure out how to make the library fast for non-CMUCL/SBCL
+We might just have to accept a bit of code bloat everyplace else, by
+duplicating logic/functions for simple vs. non-simple.
+I don't want to restrict clients to always using simple arrays everywhere.
+
+CCL looks like it ought to be able to get around this, but I can't find
+the magic call.
 * ignoring whitespace when decoding
 We are definitely going to over-allocate if we permit whitespace.
 * other formats
