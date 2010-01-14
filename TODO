@@ -7,8 +7,9 @@ that paradigm up with variable-sized groups.
 * fix ascii85 encoding
 Must SHRINK-VECTOR on NIL destination in case we encoded 'z'.
 * line-breaking encoded output
-This should be easy; just pass a slightly different closure into this
-main encoding function.
+This is probably really only doable for encoding to freshly-consed vectors.
+Certainly it's much more doable for clients with the upcoming async
+interface.
 * compiler macros for optimizing constant-format versions of encode/decode
 The trick will be to do this without adding too much bloat.  Will
 probably only do this for a NIL destination, as that's the case where we
