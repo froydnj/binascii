@@ -2,4 +2,5 @@
 
 (cl:defpackage :binascii
   (:use :cl)
+  (:shadow simple-string)
   (:export #:encode-octets #:decode-octets))
