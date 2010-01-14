@@ -150,6 +150,69 @@ octet vector with a fill pointer."
   #-(or sbcl cmu)
   (values v start (or end (length v))))
 
+#||
+(defun encode-to-fresh-vector (octets format start end element-type)
+  (multiple-value-bind (input start end)
+      (array-data-and-offsets octets start end)
+    (let* ((state (find-format-state format))
+           (length (funcall (encode-state-encoded-length state) (- end start))))
+      (flet ((frob (etype encode-fun)
+               (let ((v (make-array length :element-type etype)))
+                 (funcall encode-fun state v octets
+                          0 length start end t)
+                 v)))
+        (declare (inline frob))
+        (ecase (canonical-element-type element-type)
+          (character
+           (frob 'character (encode-state-octets->string state)))
+          (base-char
+           (frob 'base-char (encode-state-octets->string state)))
+          (ub8
+           (frob '(unsigned-byte 8) (encode-state-octets->octets state))))))))
+
+(defun encode (octets format &key (start 0) end (element-type 'base-char))
+  (encode-to-fresh-vector octets format start end element-type))
+
+(defun encode-octets (destination octets format &key (start 0) end
+                      (output-start 0) output-end (element-type 'base-char)
+                      finishp)
+  "Encode OCTETS between START and END into ASCII characters
+according to FORMAT and write them to DESTINATION according to ELEMENT-TYPE.
+
+If DESTINATION is NIL and ELEMENT-TYPE is a subtype of CHARACTER, then a
+string is returned.  If DESTINATION is NIL and ELEMENT-TYPE is
+\(UNSIGNED-BYTE 8) or an equivalent type, then an octet vector is returned.
+
+If ELEMENT-TYPE is a subtype of CHARACTER, then DESTINATION may also be
+a string.  Similarly, if ELEMENT-TYPE is (UNSIGNED-BYTE 8) or an
+equivalent type, then DESTINATION may be an octet vector.  In this case,
+OUTPUT-START and OUTPUT-END are used to determine the portion of
+DESTINATION where the encoded output may be placed.  The number of
+octets encoded and the number of characters or bytes, respectively,
+written are returned as multiple values.  ELEMENT-TYPE is ignored.
+
+If FINISHP is true, then in addition to any encoding of OCTETS, also output
+any necessary padding required by FORMAT."
+  (let ((format-state (find-format format)))
+    (flet ((frob (encode-fun)
+             (multiple-value-bind (input input-start input-end)
+                 (array-data-and-offsets octets start end)
+               (multiple-value-bind (output output-start output-end)
+                   (array-data-and-offsets destination output-start output-end)
+                 (funcall encode-fun format-state
+                          output octets
+                          output-start output-end
+                          input-start input-end nil)))))
+      (declare (inline frob))
+      (etypecase destination
+        (null
+         (encode-to-fresh-vector octets format-state start end element-type))
+        (string
+         (frob (encode-state-octets->string format-state)))
+        ((array (unsigned-byte 8) (*))
+         (frob (encode-state-octets->octets format-state)))))))
+||#
+
 (defun decode-octets (destination string format
                       &key (start 0) end decoded-length case-fold map01
                       &allow-other-keys)
