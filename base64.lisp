@@ -30,7 +30,6 @@
   (declare (type simple-octet-vector input))
   (declare (type index output-start output-end input-start input-end))
   (declare (type function converter))
-  (declare (optimize speed))
   (let* ((input-index input-start)
          (output-index output-start)
          (bits (base64-encode-state-bits state))
@@ -133,6 +132,7 @@
                               output-start output-end
                               input-start input-end lastp)
   (declare (type simple-octet-vector output))
+  (declare (optimize speed))
   (base64-encoder state output input output-start output-end
                   input-start input-end lastp #'char-code))
 
@@ -140,6 +140,7 @@
                               output-start output-end
                               input-start input-end lastp)
   (declare (type simple-string output))
+  (declare (optimize speed))
   (base64-encoder state output input output-start output-end
                   input-start input-end lastp #'identity))
 
