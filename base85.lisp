@@ -5,6 +5,28 @@
 (defvar *base85-encode-table*
   #.(coerce "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{|}~" 'simple-base-string))
 
+(defstruct (base85-encode-state
+             (:include encode-state)
+             (:copier nil)
+             (:constructor make-base85-encode-state
+                           (table
+                            &aux (encoded-length #'encoded-length/base85)
+                                 (octets->octets #'octets->octets/base85)
+                                 (octets->string #'octets->string/base85))))
+  ;; TODO: Clever hack for little-endian machines: fill in GROUP
+  ;; back-to-front, using PENDING to count down, then use SBCL's
+  ;; %VECTOR-RAW-BITS or similar to read out the group in proper
+  ;; big-endian order.  We could even do the same thing on x86-64 if we
+  ;; made the buffer bigger.
+  ;;
+  ;; For now, though, we'll fill GROUP front-to-back and PENDING will
+  ;; indicate how many octets we've filled in.
+  (group (make-array 4 :element-type '(unsigned-byte 8))
+         :read-only t :type (simple-array (unsigned-byte 8) (4)))
+  (pending 0 :type (integer 0 4))
+  (table *base85-encode-table* :read-only t :type (simple-array base-char (85)))
+  (finished-input-p nil))
+
 (defun encoded-length/base85 (count)
   "Return the number of characters required to encode COUNT octets in Base85."
   (* (ceiling count 4) 5))
