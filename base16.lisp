@@ -11,7 +11,7 @@
   (make-decode-table *base16-encode-table*))
 (declaim (type decode-table *base16-decode-table*))
 
-(defun encoded-length-base16 (count)
+(defun encoded-length/base16 (count)
   "Return the number of characters required to encode COUNT octets in Base16."
   (* count 2))
 
@@ -26,11 +26,11 @@
           (funcall writer (aref table (ldb (byte 4 0) byte))))))
 
 (defmethod encoding-tools ((format (eql :base16)))
-  (values #'encode-octets-base16 #'encoded-length-base16
+  (values #'encode-octets-base16 #'encoded-length/base16
           *base16-encode-table*))
 
 (defmethod encoding-tools ((format (eql :hex)))
-  (values #'encode-octets-base16 #'encoded-length-base16
+  (values #'encode-octets-base16 #'encoded-length/base16
           *hex-encode-table*))
 
 (defun decode-octets-base16 (string start end length table writer)
