@@ -5,7 +5,7 @@
 (defvar *base85-encode-table*
   #.(coerce "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{|}~" 'simple-base-string))
 
-(defun encoded-length-base85 (count)
+(defun encoded-length/base85 (count)
   "Return the number of characters required to encode COUNT octets in Base85."
   (* (ceiling count 4) 5))
 
@@ -31,7 +31,7 @@
                        (funcall writer (aref buffer i)))))))
 
 (defmethod encoding-tools ((format (eql :base85)))
-  (values #'encode-octets-base85 #'encoded-length-base85
+  (values #'encode-octets-base85 #'encoded-length/base85
           *base85-encode-table*))
 
 (defvar *base85-decode-table* (make-decode-table *base85-encode-table*))
