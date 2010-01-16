@@ -25,9 +25,84 @@
          :type (simple-array base-char (16)))
   (finished-input-p nil))
 
+(declaim (inline base16-encoder))
+(defun base16-encoder (state output input
+                       output-start output-end
+                       input-start input-end lastp converter)
+  (declare (type base16-encode-state state))
+  (declare (type simple-octet-vector input))
+  (declare (type index output-start output-end input-start input-end))
+  (declare (type function converter))
+  (let ((input-index input-start)
+        (output-index output-start)
+        (bits (base16-encode-state-bits state))
+        (n-bits (base16-encode-state-n-bits state))
+        (table (base16-encode-state-table state)))
+    (declare (type index input-index output-index))
+    (declare (type (unsigned-byte 8) bits))
+    (declare (type fixnum n-bits))
+    (tagbody
+     PAD-CHECK
+       (when (base16-encode-state-finished-input-p state)
+         (go FLUSH-BITS))
+     INPUT-CHECK
+       (when (>= index-index input-end)
+         (go DONE))
+     DO-INPUT
+       (when (zerop n-bits)
+         (setf bits (aref input input-index))
+         (incf input-index)
+         (setf n-bits 8))
+     OUTPUT-CHECK
+       (when (>= output-index output-end)
+         (go DONE))
+     DO-OUTPUT
+       (decf n-bits 4)
+       (setf (aref output output-index)
+             (funcall converter (aref table (ldb (byte 4 n-bits) bits))))
+       (incf output-index)
+       (if (>= n-bits 4)
+           (go OUTPUT-CHECK)
+           (go INPUT-CHECK))
+     DONE
+       (unless lastp
+         (go RESTORE-STATE))
+       (setf (base16-encode-state-finished-input-p state) t)
+     FLUSH-BITS
+       (when (zerop n-bits)
+         (go RESTORE-STATE))
+     FLUSH-OUTPUT-CHECK
+       (when (>= output-index output-end)
+         (go RESTORE-STATE))
+     DO-FLUSH-OUTPUT
+       (decf n-bits 4)
+       (setf (aref output output-index)
+             (funcall converter (aref table (ldb (byte 4 n-bits) bits))))
+       (incf output-index)
+       (when (= n-bits 4)
+         (go FLUSH-OUTPUT-CHECK))
+     RESTORE-STATE
+       (setf (base16-encode-state-bits state) bits
+             (base16-encode-state-n-bits state) n-bits))
+    (values (- input-index input-start) (- output-index output-start))))
+
 (defun encoded-length/base16 (count)
   "Return the number of characters required to encode COUNT octets in Base16."
   (* count 2))
+
+(defun octets->octets/base16 (state output input
+                              output-start output-end
+                              input-start input-end lastp)
+  (declare (type simple-octet-vector output))
+  (base16-encoder state output input output-start output-end
+                  input-start input-end lastp #'char-code))
+
+(defun octets->string/base16 (state output input
+                              output-start output-end
+                              input-start input-end lastp)
+  (declare (type simple-string output))
+  (base16-encoder state output input output-start output-end
+                  input-start input-end lastp #'identity))
 
 (defun encode-octets-base16 (octets start end table writer)
   (declare (type (simple-array (unsigned-byte 8) (*)) octets))
