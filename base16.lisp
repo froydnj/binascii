@@ -11,6 +11,20 @@
   (make-decode-table *base16-encode-table*))
 (declaim (type decode-table *base16-decode-table*))
 
+(defstruct (base16-encode-state
+             (:include encode-state)
+             (:copier nil)
+             (:constructor make-base16-encode-state
+                           (table
+                            &aux (encoded-length #'encoded-length/base16)
+                            (octets->octets #'octets->octets/base16)
+                            (octets->string #'octets->string/base16))))
+  (bits 0 :type (unsigned-byte 8))
+  (n-bits 0 :type fixnum)
+  (table *base16-encode-table* :read-only t
+         :type (simple-array base-char (16)))
+  (finished-input-p nil))
+
 (defun encoded-length/base16 (count)
   "Return the number of characters required to encode COUNT octets in Base16."
   (* count 2))
