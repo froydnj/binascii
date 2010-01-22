@@ -11,7 +11,7 @@
   (make-decode-table *base16-encode-table*))
 (declaim (type decode-table *base16-decode-table*))
 
-(defvar *base16-format-descriptor
+(defvar *base16-format-descriptor*
   (make-format-descriptor #'encoded-length/base16
                           #'octets->string/base16
                           #'octets->octets/base16
