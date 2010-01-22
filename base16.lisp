@@ -11,14 +11,21 @@
   (make-decode-table *base16-encode-table*))
 (declaim (type decode-table *base16-decode-table*))
 
+(defvar *base16-format-descriptor
+  (make-format-descriptor #'encoded-length/base16
+                          #'octets->string/base16
+                          #'octets->octets/base16
+                          #'decoded-length-base16
+                          #'string->octets/base16
+                          #'octets->octets/base16))
+
 (defstruct (base16-encode-state
              (:include encode-state)
              (:copier nil)
              (:constructor make-base16-encode-state
-                           (table
-                            &aux (encoded-length #'encoded-length/base16)
-                            (octets->octets #'octets->octets/base16)
-                            (octets->string #'octets->string/base16))))
+                           (&aux (table *base16-encode-table*)))
+             (:constructor make-hex-encode-state
+                           (&aux (table *hex-encode-table*))))
   (bits 0 :type (unsigned-byte 8))
   (n-bits 0 :type fixnum)
   (table *base16-encode-table* :read-only t
