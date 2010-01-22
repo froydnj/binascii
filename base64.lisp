@@ -19,7 +19,6 @@
   (bits 0 :type (unsigned-byte 16))
   (n-bits 0 :type fixnum)
   (table *base64-encode-table* :read-only t :type (simple-array base-char (64)))
-  (adding-padding-p nil)
   (padding-remaining 0 :type (integer 0 3)))
 
 (declaim (inline base64-encoder))
