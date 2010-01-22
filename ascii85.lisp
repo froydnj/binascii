@@ -5,13 +5,144 @@
 (defvar *ascii85-encode-table*
   #.(coerce "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstu" 'simple-base-string))
 
-(defun encoded-length-ascii85 (count)
+(defvar *ascii85-format-descriptor*
+  (make-format-descriptor #'encoded-length/ascii85
+                          #'octets->string/ascii85
+                          #'octets->octets/ascii85
+                          #'decoded-length-ascii85
+                          #'string->octets/ascii85
+                          #'octets->octets/ascii85))
+
+(defstruct (ascii85-encode-state
+             (:include encode-state)
+             (:copier nil)
+             (:constructor make-ascii85-encode-state))
+  (bits 0 :type (unsigned-byte 32))
+  (pending 0 :type (integer 0 4))
+  (output-group (make-array 5 :element-type 'base-char)
+                :read-only t :type (simple-array base-char (5)))
+  (output-pending 0 :type (integer 0 5))
+  (table *ascii85-encode-table* :read-only t
+         :type (simple-array base-car (85))))
+
+(defun encoded-length/ascii85 (count)
   "Return the number of characters required to encode COUNT octets in Ascii85."
   (multiple-value-bind (q r) (truncate count 4)
     (let ((complete (* q 5)))
       (if (zerop r)
           complete
           (+ complete r 1)))))
+
+(declaim (inline ascii85-encode))
+(defun ascii85-encoder (state output input
+                        ouput-start output-end
+                        input-start input-end lastp converter)
+  (declare (type ascii85-encode-state state))
+  (declare (type simple-octet-vector input))
+  (declare (type index output-start output-end input-start input-end))
+  (declare (type function coverter))
+  (let ((input-index input-start)
+        (output-index output-start)
+        (bits (ascii85-encode-state-bits state))
+        (pending (ascii85-encode-state-pending))
+        (output-group (ascii85-encode-state-output-group state))
+        (output-pending (ascii85-encode-state-output-pending state)))
+    (declare (type index input-index output-index))
+    (declare (type (unsigned-byte 32) bits))
+    (declare (type (integer 0 4) pending))
+    (declare (type (integer 0 5) output-pending))
+    (flet ((expand-for-output (bits output-group)
+             (cond
+               ((zerop group)
+                (setf (aref output-group 0) #\z)
+                1)
+               (t
+                (loop for i from 45 downto 0
+                   do (multiple-value-bind (b index) (truncate bits 85)
+                        (setf bits b
+                              (aref output-group i)
+                              (code-char (+ #.(char-code #\!) index))))
+                   finally (return 5))))))
+      (tagbody
+       PAD-CHECK
+         (when (ascii85-encode-state-finished-input-p state)
+           (go FLUSH-BITS))
+       INPUT-CHECK
+         (when (>= input-index input-end)
+           (go DONE))
+       DO-INPUT
+         (when (< pending 4)
+           (setf bits (ldb (byte 32 0)
+                           (logior (ash (aref input input-index)
+                                        (- 24 (* pending 8)))
+                                   bits)))
+           (incf input-index)
+           (incf pending)
+           (go INPUT-CHECK))
+       EXPAND-FOR-OUTPUT
+         (setf output-pending (expand-for-output bits output-group))
+       OUTPUT-CHECK
+         (when (>= output-index output-end)
+           (go DONE))
+       DO-OUTPUT
+         (when (> output-pending 0)
+           (setf (aref output output-index)
+                 (funcall converter
+                          (aref output-group (decf output-pending))))
+           (incf output-index)
+           (cond
+             ((zerop output-pending)
+              (setf bits 0)
+              (setf pending 0)
+              (go INPUT-CHECK))
+             (t
+              (go OUTPUT-CHECK))))
+       DONE
+         (unless lastp
+           (go RESTORE-STATE))
+         (setf (ascii85-encode-state-finished-input-p state) t)
+         (setf output-pending (expand-for-output bits output-group)
+               output-pending (1+ pending))
+       FLUSH-BITS
+         (when (zerop output-pending)
+           (go RESTORE-STATE))
+       FLUSH-OUTPUT-CHECK
+         (when (>= output-index output-end)
+           (go RESTORE-STATE))
+       DO-FLUSH-OUTPUT
+         (when (> output-pending 0)
+           (setf (aref output output-index)
+                 (funcall converter
+                          (aref output-group (decf output-pending))))
+           (incf output-index)
+           (cond
+             ((zerop output-pending)
+              (setf bits 0)
+              (setf pending 0)
+              (go RESTORE-STATE))
+             (t
+              (go FLUSH-OUTPUT-CHECK))))
+       RESTORE-STATE
+         (setf (ascii85-encode-state-bits state) bits
+               (ascii85-encode-state-pending state) pending
+               (ascii85-encode-state-output-pending state) output-pending))
+      (values (- input-index input-start) (- output-index output-start)))))
+
+(defun octets->octets/ascii85 (state output input
+                              output-start output-end
+                              input-start input-end lastp)
+  (declare (type simple-octet-vector output))
+  (declare (optimize speed))
+  (ascii85-encoder state output input output-start output-end
+                  input-start input-end lastp #'char-code))
+
+(defun octets->string/ascii85 (state output input
+                              output-start output-end
+                              input-start input-end lastp)
+  (declare (type simple-string output))
+  (declare (optimize speed))
+  (ascii85-encoder state output input output-start output-end
+                  input-start input-end lastp #'identity))
 
 (defun encode-octets-ascii85 (octets start end table writer)
   (declare (type (simple-array (unsigned-byte 8) (*)) octets))
