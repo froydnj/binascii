@@ -8,14 +8,20 @@
 (defvar *base64url-encode-table*
   #.(coerce "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_" 'simple-base-string))
 
+(defvar *base64-format-descriptor*
+  (make-format-descriptor #'encoded-length/base64
+                          #'octets->string/base64
+                          #'octets->octets/base64
+                          #'decoded-length-base64
+                          #'string->octets/base64
+                          #'octets->octets/base64))
+
 (defstruct (base64-encode-state
-             (:include encode-state)
              (:copier nil)
              (:constructor make-base64-encode-state
-                           (table
-                            &aux (encoded-length #'encoded-length/base64)
-                                 (octets->octets #'octets->octets/base64)
-                                 (octets->string #'octets->string/base64))))
+                           (&aux (table *base64-encode-table*)))
+             (:constructor make-base64url-encode-state
+                           (&aux (table *base64url-encode-table*))))
   (bits 0 :type (unsigned-byte 16))
   (n-bits 0 :type fixnum)
   (table *base64-encode-table* :read-only t :type (simple-array base-char (64)))
