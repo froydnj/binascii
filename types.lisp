@@ -16,16 +16,26 @@
 (defun required-argument ()
   (error "Required argument not provided"))
 
+(defstruct (format-descriptor
+             (:copier nil)
+             (:constructor make-format-descriptor
+                           (encoded-length octets->string octets->octets
+                                           decoded-length
+                                           string->octets
+                                           octets->string)))
+  (encoded-length (required-argument) :type function :read-only t)
+  (octets->string (required-argument) :type function :read-only t)
+  (octets->octets (required-argument) :type function :read-only t)
+  (decoded-length (required-argument) :type function :read-only t)
+  (string->octets (required-argument) :type function :read-only t)
+  (octets->octets (required-argument) :type function :read-only t))
+
 (defstruct (encode-state
              (:copier nil)
              (:constructor))
-  (encoded-length (required-argument) :read-only t)
-  (octets->string (required-argument) :read-only t)
-  (octets->octets (required-argument) :read-only t))
+  )
 
 (defstruct (decode-state
              (:copier nil)
              (:constructor))
-  (decoded-length (required-argument) :read-only t)
-  (string->octets (required-argument) :read-only t)
-  (octets->octets (required-argument) :read-only t))
+  )
