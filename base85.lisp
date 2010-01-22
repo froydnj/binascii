@@ -127,7 +127,7 @@
               (setf pending 0)
               (go RESTORE-STATE))
              (t
-              (go OUTPUT-CHECK))))
+              (go FLUSH-OUTPUT-CHECK))))
        RESTORE-STATE
          (setf (base85-encode-state-bits state) bits
                (base85-encode-state-pending state) pending
