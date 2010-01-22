@@ -29,8 +29,7 @@
   (output-group (make-array 5 :element-type 'base-char)
                 :read-only t :type (simple-array base-char (5)))
   (output-pending 0 :type (integer 0 5))
-  (table *base85-encode-table* :read-only t :type (simple-array base-char (85)))
-  (finished-input-p nil))
+  (table *base85-encode-table* :read-only t :type (simple-array base-char (85))))
 
 (defun encoded-length/base85 (count)
   "Return the number of characters required to encode COUNT octets in Base85."

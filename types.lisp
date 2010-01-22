@@ -33,7 +33,13 @@
 (defstruct (encode-state
              (:copier nil)
              (:constructor))
-  )
+  ;; LINE-BREAK describes after how many characters we should be
+  ;; inserting newlines into the encoded output.  It is zero if we
+  ;; should never insert newlines.
+  (line-break 0 :type (integer 0 *))
+  ;; FINISHED-INPUT-P is either T or NIL depending on whether we have
+  ;; seen all of the input to be encoded.
+  (finished-input-p nil))
 
 (defstruct (decode-state
              (:copier nil)
