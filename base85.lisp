@@ -67,7 +67,7 @@
       (declare (inline expand-for-output))
       (tagbody
        PAD-CHECK
-         (when (base85-encoder-state-finished-input-p state)
+         (when (base85-encode-state-finished-input-p state)
            (go FLUSH-BITS))
        INPUT-CHECK
          (when (>= input-index input-end)
