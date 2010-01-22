@@ -40,7 +40,7 @@
     (declare (type fixnum n-bits))
     (tagbody
      PAD-CHECK
-       (when (base64-encode-state-adding-padding-p state)
+       (when (base64-encode-state-finished-input-p state)
          (go PAD))
      INPUT-CHECK
        (when (>= input-index input-end)
@@ -65,7 +65,7 @@
      DONE
        (unless lastp
          (go RESTORE-STATE))
-       (setf (base64-encode-state-adding-padding-p state) t)
+       (setf (base64-encode-state-finished-input-p state) t)
        (cond
          ((= n-bits 2)
           (setf (base64-encode-state-padding-remaining state) 3))

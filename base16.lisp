@@ -22,8 +22,7 @@
   (bits 0 :type (unsigned-byte 8))
   (n-bits 0 :type fixnum)
   (table *base16-encode-table* :read-only t
-         :type (simple-array base-char (16)))
-  (finished-input-p nil))
+         :type (simple-array base-char (16))))
 
 (declaim (inline base16-encoder))
 (defun base16-encoder (state output input
