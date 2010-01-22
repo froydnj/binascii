@@ -5,14 +5,18 @@
 (defvar *base85-encode-table*
   #.(coerce "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{|}~" 'simple-base-string))
 
+(defvar *base85-format-descriptor*
+  (make-format-descriptor #'encoded-length/base85
+                          #'octets->string/base85
+                          #'octets->octets/base85
+                          #'decoded-length-base85
+                          #'string->octets/base85
+                          #'octets->octets/base85))
+
 (defstruct (base85-encode-state
              (:include encode-state)
              (:copier nil)
-             (:constructor make-base85-encode-state
-                           (table
-                            &aux (encoded-length #'encoded-length/base85)
-                                 (octets->octets #'octets->octets/base85)
-                                 (octets->string #'octets->string/base85))))
+             (:constructor make-base85-encode-state))
   ;; TODO: Clever hack for little-endian machines: fill in GROUP
   ;; back-to-front, using PENDING to count down, then use SBCL's
   ;; %VECTOR-RAW-BITS or similar to read out the group in proper
