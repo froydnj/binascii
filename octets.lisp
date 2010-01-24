@@ -211,6 +211,45 @@ any necessary padding required by FORMAT."
          (frob (encode-state-octets->string format-state)))
         ((array (unsigned-byte 8) (*))
          (frob (encode-state-octets->octets format-state)))))))
+
+(defun decode-to-fresh-vector (string format-start start end)
+  (multiple-value-bind (input start end)
+      (array-data-and-offsets string start end)
+    (let* ((state (find-format-state format case-fold map01))
+           (length (funcall (decode-state-decoded-length state)
+                            (- end start))))
+      (flet ((frob (v decode-fun)
+               (funcall decode-fun state v string 0 length start end)))
+        (let ((octets (make-array length :element-type '(unsigned-byte 8))))
+          (etypecase string
+            (simple-string
+             (frob octets (decode-state-string->octets state)))
+            (simple-octet-vector
+             (frob octets (decode-state-octets->octets state)))))))))
+
+(defun decode-octets (destination string format &key (start 0) end
+                      (output-start 0) output-end case-fold map01 finishp)
+  "Decode the characters of STRING between START and END into octets
+according to FORMAT.  DECODED-LENGTH indicates the number of decoded
+octets to expect.  DESTINATION may be NIL.
+  (let ((format-state (find-format format case-fold map01)))
+    (flet ((frob (decode-fun)
+             (multiple-value-bind (input input-start input-end)
+                 (array-data-and-offsets string start end)
+               (multiple-value-bind (output output-start output-end)
+                   (array-data-and-offsets destination output-start output-end)
+                 (funcall decode-fun format-start
+                          output string
+                          output-start output-end
+                          input-start input-end nil)))))
+      (declare (inline frob))
+      (etypecase string
+        (null
+         (decode-to-fresh-vector string format-start start end))
+        (string
+         (frob (decode-state-string->octets format-state)))
+        ((array (unsigned-byte 8) (*))
+         (frob (decode-state-octets->octets format-state)))))))
 ||#
 
 (defun decode-octets (destination string format
