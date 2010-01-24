@@ -30,7 +30,13 @@
   (string->octets (required-argument) :type function :read-only t)
   (octets->octets (required-argument) :type function :read-only t))
 
+(defstruct (state
+             (:copier nil)
+             (:constructor nil))
+  (descriptor (required-argument) :type format-descriptor :read-only t))
+
 (defstruct (encode-state
+             (:include state)
              (:copier nil)
              (:constructor))
   ;; LINE-BREAK describes after how many characters we should be
@@ -42,6 +48,7 @@
   (finished-input-p nil))
 
 (defstruct (decode-state
+             (:include state)
              (:copier nil)
              (:constructor))
   )
