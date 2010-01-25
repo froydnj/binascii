@@ -22,9 +22,11 @@
              (:include encode-state)
              (:copier nil)
              (:constructor make-base32-encode-state
-                           (&aux (table *base32-encode-table*)))
+                           (&aux (descriptor (base32-format-descriptor))
+                                 (table *base32-encode-table*)))
              (:constructor make-base32hex-encode-state
-                           (&aux (table *base32hex-encode-table*))))
+                           (&aux (descriptor (base32-format-descriptor))
+                                 (table *base32hex-encode-table*))))
   (bits 0 :type (unsigned-byte 16))
   (n-bits 0 :type fixnum)
   (table *base32-encode-table* :read-only t

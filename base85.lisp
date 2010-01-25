@@ -19,7 +19,8 @@
 (defstruct (base85-encode-state
              (:include encode-state)
              (:copier nil)
-             (:constructor make-base85-encode-state))
+             (:constructor make-base85-encode-state
+                           (&aux (descriptor (base85-format-descriptor)))))
   ;; TODO: Clever hack for little-endian machines: fill in GROUP
   ;; back-to-front, using PENDING to count down, then use SBCL's
   ;; %VECTOR-RAW-BITS or similar to read out the group in proper

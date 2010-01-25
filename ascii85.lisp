@@ -19,7 +19,8 @@
 (defstruct (ascii85-encode-state
              (:include encode-state)
              (:copier nil)
-             (:constructor make-ascii85-encode-state))
+             (:constructor make-ascii85-encode-state
+                           (&aux (descriptor (ascii85-format-descriptor)))))
   (bits 0 :type (unsigned-byte 32))
   (pending 0 :type (integer 0 4))
   (output-group (make-array 5 :element-type 'base-char)

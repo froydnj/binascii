@@ -26,9 +26,11 @@
              (:include encode-state)
              (:copier nil)
              (:constructor make-base16-encode-state
-                           (&aux (table *base16-encode-table*)))
+                           (&aux (descriptor (base16-format-descriptor))
+                                 (table *base16-encode-table*)))
              (:constructor make-hex-encode-state
-                           (&aux (table *hex-encode-table*))))
+                           (&aux (descriptor (base16-format-descriptor))
+                                 (table *hex-encode-table*))))
   (bits 0 :type (unsigned-byte 8))
   (n-bits 0 :type fixnum)
   (table *base16-encode-table* :read-only t

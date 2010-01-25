@@ -22,9 +22,11 @@
 (defstruct (base64-encode-state
              (:copier nil)
              (:constructor make-base64-encode-state
-                           (&aux (table *base64-encode-table*)))
+                           (&aux (descriptor (base64-format-descriptor))
+                                 (table *base64-encode-table*)))
              (:constructor make-base64url-encode-state
-                           (&aux (table *base64url-encode-table*))))
+                           (&aux (descriptor (base64-format-descriptor))
+                                 (table *base64url-encode-table*))))
   (bits 0 :type (unsigned-byte 16))
   (n-bits 0 :type fixnum)
   (table *base64-encode-table* :read-only t :type (simple-array base-char (64)))
