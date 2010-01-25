@@ -35,7 +35,7 @@
 
 (declaim (inline ascii85-encode))
 (defun ascii85-encoder (state output input
-                        ouput-start output-end
+                        output-start output-end
                         input-start input-end lastp converter)
   (declare (type ascii85-encode-state state))
   (declare (type simple-octet-vector input))
@@ -134,15 +134,15 @@
   (declare (type simple-octet-vector output))
   (declare (optimize speed))
   (ascii85-encoder state output input output-start output-end
-                  input-start input-end lastp #'char-code))
+                   input-start input-end lastp #'char-code))
 
 (defun octets->string/ascii85 (state output input
-                              output-start output-end
-                              input-start input-end lastp)
+                               output-start output-end
+                               input-start input-end lastp)
   (declare (type simple-string output))
   (declare (optimize speed))
   (ascii85-encoder state output input output-start output-end
-                  input-start input-end lastp #'identity))
+                   input-start input-end lastp #'identity))
 
 (defun encode-octets-ascii85 (octets start end table writer)
   (declare (type (simple-array (unsigned-byte 8) (*)) octets))
