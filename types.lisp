@@ -39,7 +39,7 @@
 (defstruct (encode-state
              (:include state)
              (:copier nil)
-             (:constructor))
+             (:constructor nil))
   ;; LINE-BREAK describes after how many characters we should be
   ;; inserting newlines into the encoded output.  It is zero if we
   ;; should never insert newlines.
@@ -51,5 +51,5 @@
 (defstruct (decode-state
              (:include state)
              (:copier nil)
-             (:constructor))
+             (:constructor nil))
   )
