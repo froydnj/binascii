@@ -7,19 +7,25 @@
 (defvar *base32hex-encode-table*
   #.(coerce "0123456789ABCDEFGHIJKLMNOPQRSTUV" 'simple-base-string))
 
+(defvar *base32-format-descriptor*
+  (make-format-descriptor #'encoded-length/base32
+                          #'octets->string/base32
+                          #'octets->octets/encode/base32
+                          #'decoded-length-base32
+                          #'string->octets/base32
+                          #'octets->octets/decode/base32))
+
 (defstruct (base32-encode-state
              (:include encode-state)
              (:copier nil)
              (:constructor make-base32-encode-state
-                           (table
-                            &aux (encoded-length #'encoded-length/base32)
-                            (octets->octets #'octets->octets/base32)
-                            (octets->string #'octets->string/base32))))
+                           (&aux (table *base32-encode-table*)))
+             (:constructor make-base32hex-encode-state
+                           (&aux (table *base32hex-encode-table*))))
   (bits 0 :type (unsigned-byte 16))
   (n-bits 0 :type fixnum)
   (table *base32-encode-table* :read-only t
          :type (simple-array base-char (32)))
-  (adding-padding-p nil)
   (padding-remaining 0 :type (integer 0 6)))
 
 (declaim (inline base32-encoder))
@@ -44,7 +50,7 @@
     (declare (type (simple-array fixnum (5)) n-pad-chars))
     (tagbody
        PAD-CHECK
-       (when (base32-encode-state-adding-padding-p state)
+       (when (base32-encode-state-finished-input-p state)
          (go PAD))
        INPUT-CHECK
        (when (>= input-index input-end)
@@ -69,7 +75,7 @@
      DONE
        (unless lastp
          (go RESTORE-STATE))
-       (setf (base32-encode-state-adding-padding-p state) t)
+       (setf (base32-encode-state-finished-input-p state) t)
        (setf (base32-encode-state-padding-remaining state)
              (aref n-pad-chars n-bits))
      PAD
