@@ -40,7 +40,7 @@
   (declare (type ascii85-encode-state state))
   (declare (type simple-octet-vector input))
   (declare (type index output-start output-end input-start input-end))
-  (declare (type function coverter))
+  (declare (type function converter))
   (let ((input-index input-start)
         (output-index output-start)
         (bits (ascii85-encode-state-bits state))
