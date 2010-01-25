@@ -8,10 +8,10 @@
 (defvar *ascii85-format-descriptor*
   (make-format-descriptor #'encoded-length/ascii85
                           #'octets->string/ascii85
-                          #'octets->octets/ascii85
+                          #'octets->octets/encode/ascii85
                           #'decoded-length-ascii85
                           #'string->octets/ascii85
-                          #'octets->octets/ascii85))
+                          #'octets->octets/decode/ascii85))
 
 (defstruct (ascii85-encode-state
              (:include encode-state)
@@ -128,9 +128,9 @@
                (ascii85-encode-state-output-pending state) output-pending))
       (values (- input-index input-start) (- output-index output-start)))))
 
-(defun octets->octets/ascii85 (state output input
-                              output-start output-end
-                              input-start input-end lastp)
+(defun octets->octets/encode/ascii85 (state output input
+                                      output-start output-end
+                                      input-start input-end lastp)
   (declare (type simple-octet-vector output))
   (declare (optimize speed))
   (ascii85-encoder state output input output-start output-end

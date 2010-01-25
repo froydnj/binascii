@@ -14,10 +14,10 @@
 (defvar *base16-format-descriptor*
   (make-format-descriptor #'encoded-length/base16
                           #'octets->string/base16
-                          #'octets->octets/base16
+                          #'octets->octets/encode/base16
                           #'decoded-length-base16
                           #'string->octets/base16
-                          #'octets->octets/base16))
+                          #'octets->octets/decode/base16))
 
 (defstruct (base16-encode-state
              (:include encode-state)
@@ -96,9 +96,9 @@
   "Return the number of characters required to encode COUNT octets in Base16."
   (* count 2))
 
-(defun octets->octets/base16 (state output input
-                              output-start output-end
-                              input-start input-end lastp)
+(defun octets->octets/encode/base16 (state output input
+                                     output-start output-end
+                                     input-start input-end lastp)
   (declare (type simple-octet-vector output))
   (base16-encoder state output input output-start output-end
                   input-start input-end lastp #'char-code))

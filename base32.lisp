@@ -106,9 +106,9 @@
              (base32-encode-state-n-bits state) n-bits))
     (values (- input-index input-start) (- output-index output-start))))
 
-(defun octets->octets/base32 (state output input
-                              output-start output-end
-                              input-start input-end lastp)
+(defun octets->octets/encode/base32 (state output input
+                                     output-start output-end
+                                     input-start input-end lastp)
   (declare (type simple-octet-vector output))
   (declare (optimize speed))
   (base32-encoder state output input output-start output-end

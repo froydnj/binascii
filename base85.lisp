@@ -8,10 +8,10 @@
 (defvar *base85-format-descriptor*
   (make-format-descriptor #'encoded-length/base85
                           #'octets->string/base85
-                          #'octets->octets/base85
+                          #'octets->octets/encode/base85
                           #'decoded-length-base85
                           #'string->octets/base85
-                          #'octets->octets/base85))
+                          #'octets->octets/decode/base85))
 
 (defstruct (base85-encode-state
              (:include encode-state)
@@ -134,9 +134,9 @@
                (base85-encode-state-output-pending state) output-pending))
       (values (- input-index input-start) (- output-index output-start)))))
 
-(defun octets->octets/base85 (state output input
-                              output-start output-end
-                              input-start input-end lastp)
+(defun octets->octets/encode/base85 (state output input
+                                     output-start output-end
+                                     input-start input-end lastp)
   (declare (type simple-octet-vector output))
   (declare (optimize speed))
   (base85-encoder state output input output-start output-end

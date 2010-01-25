@@ -11,10 +11,10 @@
 (defvar *base64-format-descriptor*
   (make-format-descriptor #'encoded-length/base64
                           #'octets->string/base64
-                          #'octets->octets/base64
+                          #'octets->octets/encode/base64
                           #'decoded-length-base64
                           #'string->octets/base64
-                          #'octets->octets/base64))
+                          #'octets->octets/decode/base64))
 
 (defstruct (base64-encode-state
              (:copier nil)
@@ -133,9 +133,9 @@
              (base64-encode-state-n-bits state) n-bits))
     (values (- input-index input-start) (- output-index output-start))))
 
-(defun octets->octets/base64 (state output input
-                              output-start output-end
-                              input-start input-end lastp)
+(defun octets->octets/encode/base64 (state output input
+                                     output-start output-end
+                                     input-start input-end lastp)
   (declare (type simple-octet-vector output))
   (declare (optimize speed))
   (base64-encoder state output input output-start output-end
