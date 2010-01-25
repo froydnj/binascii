@@ -41,7 +41,7 @@
 
 (declaim (inline base85-encode))
 (defun base85-encoder (state output input
-                       output-start ouput-end
+                       output-start output-end
                        input-start input-end lastp converter)
   (declare (type base85-encode-state state))
   (declare (type simple-octet-vector input))

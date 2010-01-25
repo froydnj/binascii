@@ -53,7 +53,7 @@
     (declare (type (integer 0 5) output-pending))
     (flet ((expand-for-output (bits output-group)
              (cond
-               ((zerop group)
+               ((zerop bits)
                 (setf (aref output-group 0) #\z)
                 1)
                (t

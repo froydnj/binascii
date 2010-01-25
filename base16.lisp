@@ -52,7 +52,7 @@
        (when (base16-encode-state-finished-input-p state)
          (go FLUSH-BITS))
      INPUT-CHECK
-       (when (>= index-index input-end)
+       (when (>= input-index input-end)
          (go DONE))
      DO-INPUT
        (when (zerop n-bits)
