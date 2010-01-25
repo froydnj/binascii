@@ -52,4 +52,6 @@
              (:include state)
              (:copier nil)
              (:constructor nil))
-  )
+  ;; FINISHED-INPUT-P is either T or NIL depending on whether we have
+  ;; seen all of the input to be encoded.
+  (finished-input-p nil))
