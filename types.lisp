@@ -19,16 +19,17 @@
 (defstruct (format-descriptor
              (:copier nil)
              (:constructor make-format-descriptor
-                           (encoded-length octets->string octets->octets
+                           (encoded-length octets->string
+                                           octets->octets/encode
                                            decoded-length
                                            string->octets
-                                           octets->string)))
+                                           octets->octets/decode)))
   (encoded-length (required-argument) :type function :read-only t)
   (octets->string (required-argument) :type function :read-only t)
-  (octets->octets (required-argument) :type function :read-only t)
+  (octets->octets/encode (required-argument) :type function :read-only t)
   (decoded-length (required-argument) :type function :read-only t)
   (string->octets (required-argument) :type function :read-only t)
-  (octets->octets (required-argument) :type function :read-only t))
+  (octets->octets/decode (required-argument) :type function :read-only t))
 
 (defstruct (state
              (:copier nil)
