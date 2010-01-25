@@ -6,15 +6,17 @@
   #.(coerce "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstu" 'simple-base-string))
 
 (defun ascii85-format-descriptor ()
-  (let ((fd (load-time-value nil)))
+  (let ((cell (load-time-value (list nil)))
+        (fd (car cell)))
     (if fd
         fd
-        (setf fd (make-format-descriptor #'encoded-length/ascii85
-                                         #'octets->string/ascii85
-                                         #'octets->octets/encode/ascii85
-                                         #'decoded-length-ascii85
-                                         #'string->octets/ascii85
-                                         #'octets->octets/decode/ascii85)))))
+        (setf (car cell)
+              (make-format-descriptor #'encoded-length/ascii85
+                                      #'octets->string/ascii85
+                                      #'octets->octets/encode/ascii85
+                                      #'decoded-length-ascii85
+                                      #'string->octets/ascii85
+                                      #'octets->octets/decode/ascii85)))))
 
 (defstruct (ascii85-encode-state
              (:include encode-state)

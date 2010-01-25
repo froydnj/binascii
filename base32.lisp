@@ -8,15 +8,17 @@
   #.(coerce "0123456789ABCDEFGHIJKLMNOPQRSTUV" 'simple-base-string))
 
 (defun base32-format-descriptor ()
-  (let ((fd (load-time-value nil)))
+  (let ((cell (load-time-value (list nil)))
+        (fd (car cell)))
     (if fd
         fd
-        (setf fd (make-format-descriptor #'encoded-length/base32
-                                         #'octets->string/base32
-                                         #'octets->octets/encode/base32
-                                         #'decoded-length-base32
-                                         #'string->octets/base32
-                                         #'octets->octets/decode/base32)))))
+        (setf (car cell)
+              (make-format-descriptor #'encoded-length/base32
+                                      #'octets->string/base32
+                                      #'octets->octets/encode/base32
+                                      #'decoded-length-base32
+                                      #'string->octets/base32
+                                      #'octets->octets/decode/base32)))))
 
 (defstruct (base32-encode-state
              (:include encode-state)

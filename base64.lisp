@@ -9,15 +9,17 @@
   #.(coerce "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_" 'simple-base-string))
 
 (defun base64-format-descriptor ()
-  (let ((fd (load-time-value nil)))
+  (let ((cell (load-time-value (list nil)))
+        (fd (car cell)))
     (if fd
         fd
-        (setf fd (make-format-descriptor #'encoded-length/base64
-                                         #'octets->string/base64
-                                         #'octets->octets/encode/base64
-                                         #'decoded-length-base64
-                                         #'string->octets/base64
-                                         #'octets->octets/decode/base64)))))
+        (setf (car cell)
+              (make-format-descriptor #'encoded-length/base64
+                                      #'octets->string/base64
+                                      #'octets->octets/encode/base64
+                                      #'decoded-length-base64
+                                      #'string->octets/base64
+                                      #'octets->octets/decode/base64)))))
 
 (defstruct (base64-encode-state
              (:copier nil)
