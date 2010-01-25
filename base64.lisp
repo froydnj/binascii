@@ -8,13 +8,16 @@
 (defvar *base64url-encode-table*
   #.(coerce "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_" 'simple-base-string))
 
-(defvar *base64-format-descriptor*
-  (make-format-descriptor #'encoded-length/base64
-                          #'octets->string/base64
-                          #'octets->octets/encode/base64
-                          #'decoded-length-base64
-                          #'string->octets/base64
-                          #'octets->octets/decode/base64))
+(defun base64-format-descriptor ()
+  (let ((fd (load-time-value nil)))
+    (if fd
+        fd
+        (setf fd (make-format-descriptor #'encoded-length/base64
+                                         #'octets->string/base64
+                                         #'octets->octets/encode/base64
+                                         #'decoded-length-base64
+                                         #'string->octets/base64
+                                         #'octets->octets/decode/base64)))))
 
 (defstruct (base64-encode-state
              (:copier nil)

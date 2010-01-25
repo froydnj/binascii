@@ -11,13 +11,16 @@
   (make-decode-table *base16-encode-table*))
 (declaim (type decode-table *base16-decode-table*))
 
-(defvar *base16-format-descriptor*
-  (make-format-descriptor #'encoded-length/base16
-                          #'octets->string/base16
-                          #'octets->octets/encode/base16
-                          #'decoded-length-base16
-                          #'string->octets/base16
-                          #'octets->octets/decode/base16))
+(defun base16-format-descriptor ()
+  (let ((fd (load-time-value nil)))
+    (if fd
+        fd
+        (setf fd (make-format-descriptor #'encoded-length/base16
+                                         #'octets->string/base16
+                                         #'octets->octets/encode/base16
+                                         #'decoded-length-base16
+                                         #'string->octets/base16
+                                         #'octets->octets/decode/base16)))))
 
 (defstruct (base16-encode-state
              (:include encode-state)

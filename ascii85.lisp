@@ -5,13 +5,16 @@
 (defvar *ascii85-encode-table*
   #.(coerce "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstu" 'simple-base-string))
 
-(defvar *ascii85-format-descriptor*
-  (make-format-descriptor #'encoded-length/ascii85
-                          #'octets->string/ascii85
-                          #'octets->octets/encode/ascii85
-                          #'decoded-length-ascii85
-                          #'string->octets/ascii85
-                          #'octets->octets/decode/ascii85))
+(defun ascii85-format-descriptor ()
+  (let ((fd (load-time-value nil)))
+    (if fd
+        fd
+        (setf fd (make-format-descriptor #'encoded-length/ascii85
+                                         #'octets->string/ascii85
+                                         #'octets->octets/encode/ascii85
+                                         #'decoded-length-ascii85
+                                         #'string->octets/ascii85
+                                         #'octets->octets/decode/ascii85)))))
 
 (defstruct (ascii85-encode-state
              (:include encode-state)

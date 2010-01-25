@@ -7,13 +7,16 @@
 (defvar *base32hex-encode-table*
   #.(coerce "0123456789ABCDEFGHIJKLMNOPQRSTUV" 'simple-base-string))
 
-(defvar *base32-format-descriptor*
-  (make-format-descriptor #'encoded-length/base32
-                          #'octets->string/base32
-                          #'octets->octets/encode/base32
-                          #'decoded-length-base32
-                          #'string->octets/base32
-                          #'octets->octets/decode/base32))
+(defun base32-format-descriptor ()
+  (let ((fd (load-time-value nil)))
+    (if fd
+        fd
+        (setf fd (make-format-descriptor #'encoded-length/base32
+                                         #'octets->string/base32
+                                         #'octets->octets/encode/base32
+                                         #'decoded-length-base32
+                                         #'string->octets/base32
+                                         #'octets->octets/decode/base32)))))
 
 (defstruct (base32-encode-state
              (:include encode-state)
