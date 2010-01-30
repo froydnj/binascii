@@ -17,6 +17,7 @@
   (error "Required argument not provided"))
 
 (defstruct (format-descriptor
+             (:conc-name fd-)
              (:copier nil)
              (:constructor make-format-descriptor
                            (encoded-length octets->string
