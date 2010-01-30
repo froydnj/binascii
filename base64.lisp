@@ -22,6 +22,7 @@
                                       #'octets->octets/decode/base64)))))
 
 (defstruct (base64-encode-state
+             (:include encode-state)
              (:copier nil)
              (:constructor make-base64-encode-state
                            (&aux (descriptor (base64-format-descriptor))
