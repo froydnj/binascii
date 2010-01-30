@@ -151,13 +151,12 @@ octet vector with a fill pointer."
   (values v start (or end (length v))))
 
 #||
-(defun encode-to-fresh-vector (octets format start end element-type)
+(defun encode-to-fresh-vector (octets state start end element-type)
+  (declare (type encode-state state))
   (multiple-value-bind (input start end)
       (array-data-and-offsets octets start end)
-    (let* ((state (find-encoder format))
-           (fd (state-descriptor state))
+    (let* ((fd (state-descriptor state))
            (length (funcall (fd-encoded-length fd) (- end start))))
-      (declare (type encode-state state))
       (declare (type format-descriptor fd))
       (flet ((frob (etype encode-fun)
                (let ((v (make-array length :element-type etype)))
@@ -174,7 +173,7 @@ octet vector with a fill pointer."
            (frob '(unsigned-byte 8) (fd-octets->octets/encode fd))))))))
 
 (defun encode (octets format &key (start 0) end (element-type 'base-char))
-  (encode-to-fresh-vector octets format start end element-type))
+  (encode-to-fresh-vector octets (find-encoder format) start end element-type))
 
 (defun encode-octets (destination octets format &key (start 0) end
                       (output-start 0) output-end (element-type 'base-char)
