@@ -181,7 +181,7 @@
                  (output buffer group count)))))
 
 (defmethod encoding-tools ((format (eql :ascii85)))
-  (values #'encode-octets-ascii85 #'encoded-length-ascii85
+  (values #'encode-octets-ascii85 #'encoded-length/ascii85
           *ascii85-encode-table*))
 
 (defvar *ascii85-decode-table* (make-decode-table *ascii85-encode-table*))
