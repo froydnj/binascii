@@ -29,7 +29,7 @@
                 :read-only t :type (simple-array base-char (5)))
   (output-pending 0 :type (integer 0 5))
   (table *ascii85-encode-table* :read-only t
-         :type (simple-array base-car (85))))
+         :type (simple-array base-char (85))))
 
 (defun encoded-length/ascii85 (count)
   "Return the number of characters required to encode COUNT octets in Ascii85."
