@@ -2,12 +2,6 @@
 
 (cl:in-package :binascii)
 
-(defgeneric encoding-tools (format)
-  (:documentation "Return three values: the basic encoding function for
-FORMAT, an encoded-length function for FORMAT, and an encoding table for
-FORMAT.  The encoding table specifies ASCII characters for encoded
-values and is typically a SIMPLE-BASE-STRING."))
-
 (defgeneric decoding-tools (format &key case-fold map01)
   (:documentation "Return three values: the basic decoding function for
 FORMAT, a decoded-length function for FORMAT, and the decoding table for
@@ -42,38 +36,6 @@ FORMAT."))
     (t
      (when errorp
        (error "Unsupported element-type ~A" element-type)))))
-
-(defun determine-encoding-writer (destination length element-type)
-  (etypecase destination
-    (null
-     (flet ((do-encode (etype transform)
-              (let ((v (make-array (the fixnum length) :element-type etype))
-                    (i -1))
-                (values #'(lambda (c) (setf (aref v (incf i))
-                                            (funcall transform c)))
-                        v))))
-       (declare (inline do-encode))
-       (cond
-         ((eq element-type 'character)
-          (do-encode 'character #'identity))
-         ((eq element-type 'base-char)
-          (do-encode 'base-char #'identity))
-         (t
-          (do-encode '(unsigned-byte 8) #'char-code)))))
-    (stream
-     (cond
-       ((or (eq element-type 'character) (eq element-type 'base-char))
-        (values #'(lambda (c) (write-char c destination)) nil))
-       (t
-        (values #'(lambda (c) (write-byte (char-code c) destination)) nil))))
-    (string
-     (unless (or (eq element-type 'character) (eq element-type 'base-char))
-       (error "Cannot output to a string with ~A :ELEMENT-TYPE" element-type))
-     (values #'(lambda (c) (vector-push-extend c destination)) nil))
-    ((array (unsigned-byte 8) (*))
-     (unless (eq element-type 'octet)
-       (error "Cannot output to an octet vector with ~A :ELEMENT-TYPE" element-type))
-     (values #'(lambda (c) (vector-push-extend (char-code c) destination)) nil))))
 
 (defun decode-octets* (destination string decode-fun length-fun decode-table
                        start end decoded-length)
@@ -110,34 +72,6 @@ FORMAT."))
                 #'(lambda (o) (vector-push-extend o destination)))
        nil))))
 
-(defun encode-octets (destination octets format
-                      &key (start 0) end (element-type 'base-char)
-                      &allow-other-keys)
-  "Encode OCTETS between START and END into ASCII characters
-according to FORMAT and written to DESTINATION according to ELEMENT-TYPE.
-
-If DESTINATION is NIL and ELEMENT-TYPE is a subtype of CHARACTER, then a
-string is returned.  If DESTINATION is NIL and ELEMENT-TYPE is 
-\(UNSIGNED-BYTE 8) or an equivalent type, then an octet vector is returned.
-
-If DESTINATION is a STREAM, then the result is written to DESTINATION
-using WRITE-CHAR or WRITE-BYTE as chosen by ELEMENT-TYPE.
-
-If ELEMENT-TYPE is a subtype of CHARACTER, then DESTINATION may also be
-a string with a fill pointer.  The result is written to the string as if
-by use of VECTOR-PUSH-EXTEND.  Similarly, if ELEMENT-TYPE
-is (UNSIGNED-BYTE 8) or an equivalent type, then DESTINATION may be an
-octet vector with a fill pointer."
-  (multiple-value-bind (encode-fun length-fun table) (encoding-tools format)
-    (let* ((end (or end (length octets)))
-           (length (- end start))
-           (canonical-element-type (canonicalize-element-type element-type)))
-      (multiple-value-bind (writer return-value)
-          (determine-encoding-writer destination (funcall length-fun length)
-                                     canonical-element-type)
-        (funcall encode-fun octets start end table writer)
-        return-value))))
-
 (declaim (inline array-data-and-offsets))
 (defun array-data-and-offsets (v start end)
   "Like ARRAY-DISPLACEMENT, only more useful."
@@ -150,7 +84,6 @@ octet vector with a fill pointer."
   #-(or sbcl cmu)
   (values v start (or end (length v))))
 
-#||
 (defun encode-to-fresh-vector (octets state start end element-type)
   (declare (type encode-state state))
   (multiple-value-bind (input start end)
@@ -160,11 +93,11 @@ octet vector with a fill pointer."
       (declare (type format-descriptor fd))
       (flet ((frob (etype encode-fun)
                (let ((v (make-array length :element-type etype)))
-                 (funcall encode-fun state v octets
+                 (funcall encode-fun state v input
                           0 length start end t)
                  v)))
         (declare (inline frob))
-        (ecase (canonical-element-type element-type)
+        (ecase (canonicalize-element-type element-type)
           (character
            (frob 'character (fd-octets->string fd)))
           (base-char
@@ -195,8 +128,8 @@ written are returned as multiple values.  ELEMENT-TYPE is ignored.
 
 If FINISHP is true, then in addition to any encoding of OCTETS, also output
 any necessary padding required by FORMAT."
-  (let ((state (find-encoder format))
-        (fd (state-descriptor state)))
+  (let* ((state (find-encoder format))
+         (fd (state-descriptor state)))
     (declare (type encode-state state))
     (declare (type format-descriptor fd))
     (flet ((frob (encode-fun)
@@ -204,19 +137,20 @@ any necessary padding required by FORMAT."
                  (array-data-and-offsets octets start end)
                (multiple-value-bind (output output-start output-end)
                    (array-data-and-offsets destination output-start output-end)
-                 (funcall encode-fun format-state
-                          output octets
+                 (funcall encode-fun state
+                          output input
                           output-start output-end
-                          input-start input-end nil)))))
+                          input-start input-end finishp)))))
       (declare (inline frob))
       (etypecase destination
         (null
          (encode-to-fresh-vector octets state start end element-type))
         (string
-         (frob (fd-octets->string (state-descriptor state))))
+         (frob (fd-octets->string fd)))
         ((array (unsigned-byte 8) (*))
-         (frob (fd-octets->octets/encode (state-descriptor state))))))))
+         (frob (fd-octets->octets/encode fd)))))))
 
+#||
 (defun decode-to-fresh-vector (string state start end)
   (declare (type decode-state state))
   (multiple-value-bind (input start end)

@@ -150,39 +150,11 @@
   (ascii85-encoder state output input output-start output-end
                    input-start input-end lastp #'identity))
 
-(defun encode-octets-ascii85 (octets start end table writer)
-  (declare (type (simple-array (unsigned-byte 8) (*)) octets))
-  (declare (type index start end))
-  (declare (type function writer))
-  (declare (ignore table))
-  (flet ((output (buffer group count)
-           (if (zerop group)
-               (funcall writer #\z)
-               (loop for i from 4 downto 0
-                 do (multiple-value-bind (g b) (truncate group 85)
-                      (setf group g
-                            (aref buffer i) (code-char (+ #.(char-code #\!) b))))
-                  finally (dotimes (i (1+ count))
-                            (funcall writer (aref buffer i)))))))
-    (loop with length = (- end start)
-       with buffer = (make-string 5)
-       with group of-type (unsigned-byte 32) = 0
-       with count of-type fixnum = 0
-       with shift of-type fixnum = 24
-       until (zerop length)
-       do (setf group (logior group (ash (aref octets start) shift)))
-         (incf start)
-         (decf length)
-         (decf shift 8)
-         (when (= (incf count) 4)
-           (output buffer group count)
-           (setf group 0 count 0 shift 24))
-       finally (unless (zerop count)
-                 (output buffer group count)))))
+(defun string->octets/ascii85 ()
+  )
 
-(defmethod encoding-tools ((format (eql :ascii85)))
-  (values #'encode-octets-ascii85 #'encoded-length/ascii85
-          *ascii85-encode-table*))
+(defun octets->octets/decode/ascii85 ()
+  )
 
 (defvar *ascii85-decode-table* (make-decode-table *ascii85-encode-table*))
 (declaim (type decode-table *ascii85-decode-table*))
@@ -238,3 +210,7 @@
   (declare (ignorable case-fold map01))
   (values #'decode-octets-ascii85 #'decoded-length-ascii85
           *ascii85-decode-table*))
+
+(register-descriptor-and-constructors :ascii85 (ascii85-format-descriptor)
+                                      #'make-ascii85-encode-state
+                                      #'make-ascii85-encode-state)

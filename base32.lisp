@@ -129,51 +129,15 @@
   (base32-encoder state output input output-start output-end
                   input-start input-end lastp #'identity))
 
-(defun encode-octets-base32 (octets start end table writer)
-  (declare (type (simple-array (unsigned-byte 8) (*)) octets))
-  (declare (type index start end))
-  (declare (type function writer))
-  (declare (type (simple-array base-char (32)) table))
-  (loop for i from start below end
-     for bits of-type (unsigned-byte 16) = (aref octets i)
-     then (ldb (byte 16 0) (logior (ash bits 8) (aref octets i)))
-     for n-bits of-type fixnum = 8 then (+ n-bits 8)
-     do (loop while (>= n-bits 5)
-           do (decf n-bits 5)
-           (funcall writer (aref table (ldb (byte 5 n-bits) bits))))
-     finally (let ((n-pad
-                    (case n-bits
-                      (3
-                       (funcall writer (aref table
-                                             (ash (ldb (byte 3 0) bits) 2)))
-                       6)
-                      (1
-                       (funcall writer (aref table
-                                             (ash (ldb (byte 1 0) bits) 4)))
-                       4)
-                      (4
-                       (funcall writer (aref table
-                                             (ash (ldb (byte 4 0) bits) 1)))
-                       3)
-                      (2
-                       (funcall writer (aref table
-                                             (ash (ldb (byte 2 0) bits) 3)))
-                       1)
-                      (otherwise 0))))
-               (dotimes (i n-pad)
-                 (funcall writer #\=)))))
+(defun string->octets/base32 ()
+  )
+
+(defun octets->octets/decode/base32 ()
+  )
 
 (defun encoded-length/base32 (count)
   "Return the number of characters required to encode COUNT octets in Base32."
   (* (ceiling count 5) 8))
-
-(defmethod encoding-tools ((format (eql :base32)))
-  (values #'encode-octets-base32 #'encoded-length/base32
-          *base32-encode-table*))
-
-(defmethod encoding-tools ((format (eql :base32hex)))
-  (values #'encode-octets-base32 #'encoded-length/base32
-          *base32hex-encode-table*))
 
 (defvar *base32-decode-table* (make-decode-table *base32-encode-table*))
 (defvar *base32hex-decode-table* (make-decode-table *base32hex-encode-table*))
@@ -226,3 +190,10 @@
   (declare (ignorable case-fold map01))
   (values #'decode-octets-base32 #'decoded-length-base32
           *base32hex-decode-table*))
+
+(register-descriptor-and-constructors :base32 (base32-format-descriptor)
+                                      #'make-base32-encode-state
+                                      #'make-base32-encode-state)
+(register-descriptor-and-constructors :base32hex (base32-format-descriptor)
+                                      #'make-base32hex-encode-state
+                                      #'make-base32hex-encode-state)

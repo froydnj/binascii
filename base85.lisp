@@ -156,30 +156,11 @@
   (base85-encoder state output input output-start output-end
                   input-start input-end lastp #'identity))
 
-(defun encode-octets-base85 (octets start end table writer)
-  (declare (type (simple-array (unsigned-byte 8) (*)) octets))
-  (declare (type index start end))
-  (declare (type (simple-array base-char (85)) table))
-  (declare (type function writer))
-  (loop with length = (- end start)
-     with buffer = (make-string 5)
-     while (plusp length)
-     do (let ((group (do ((g 0)
-                          (i 24 (- i 8)))
-                         ((or (zerop length) (< i 0)) g)
-                       (setf g (logior (ash (aref octets start) i) g))
-                       (incf start)
-                       (decf length))))
-          (loop for i from 4 downto 0
-             do (multiple-value-bind (g b) (truncate group 85)
-                  (setf group g
-                        (aref buffer i) (aref table b)))
-             finally (dotimes (i 5)
-                       (funcall writer (aref buffer i)))))))
+(defun string->octets/base85 ()
+  )
 
-(defmethod encoding-tools ((format (eql :base85)))
-  (values #'encode-octets-base85 #'encoded-length/base85
-          *base85-encode-table*))
+(defun octets->octets/decode/base85 ()
+  )
 
 (defvar *base85-decode-table* (make-decode-table *base85-encode-table*))
 (declaim (type decode-table *base85-decode-table*))
@@ -218,3 +199,8 @@
   (declare (ignorable case-fold map01))
   (values #'decode-octets-base85 #'decoded-length-base85
           *base85-decode-table*))
+
+(register-descriptor-and-constructors :base85 (base85-format-descriptor)
+                                      #'make-base85-encode-state
+                                      #'make-base85-encode-state)
+

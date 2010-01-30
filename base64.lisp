@@ -157,39 +157,15 @@
   (base64-encoder state output input output-start output-end
                   input-start input-end lastp #'identity))
 
-(defun encode-octets-base64 (octets start end table writer)
-  (declare (type (simple-array (unsigned-byte 8) (*)) octets))
-  (declare (type index start end))
-  (declare (type function writer))
-  (declare (type (simple-array base-char (64)) table))
-  (loop 
-     for i from start below end
-     for bits of-type (unsigned-byte 16) = (aref octets i)
-       then (ldb (byte 16 0) (logior (ash bits 8) (aref octets i)))
-     for n-bits of-type fixnum = 8 then (+ n-bits 8)
-     do (loop while (>= n-bits 6)
-           do (decf n-bits 6)
-           (funcall writer (aref table (ldb (byte 6 n-bits) bits))))
-     finally (cond
-               ((= n-bits 2)
-                (funcall writer (aref table (ash (ldb (byte 2 0) bits) 4)))
-                (funcall writer #\=)
-                (funcall writer #\=))
-               ((= n-bits 4)
-                (funcall writer (aref table (ash (ldb (byte 4 0) bits) 2)))
-                (funcall writer #\=)))))
+(defun string->octets/base64 ()
+  )
+
+(defun octets->octets/decode/base64 ()
+  )
 
 (defun encoded-length/base64 (count)
   "Return the number of characters required to encode COUNT octets in Base64."
   (* (ceiling count 3) 4))
-
-(defmethod encoding-tools ((format (eql :base64)))
-  (values #'encode-octets-base64 #'encoded-length/base64
-          *base64-encode-table*))
-
-(defmethod encoding-tools ((format (eql :base64url)))
-  (values #'encode-octets-base64 #'encoded-length/base64
-          *base64url-encode-table*))
 
 (defvar *base64-decode-table*
   (make-decode-table *base64-encode-table*))
@@ -236,3 +212,10 @@
   (declare (ignorable case-fold map01))
   (values #'decode-octets-base64 #'decoded-length-base64
           *base64url-decode-table*))
+
+(register-descriptor-and-constructors :base64 (base64-format-descriptor)
+                                      #'make-base64-encode-state
+                                      #'make-base64-encode-state)
+(register-descriptor-and-constructors :base64url (base64-format-descriptor)
+                                      #'make-base64url-encode-state
+                                      #'make-base64url-encode-state)

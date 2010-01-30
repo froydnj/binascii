@@ -117,23 +117,11 @@
   (base16-encoder state output input output-start output-end
                   input-start input-end lastp #'identity))
 
-(defun encode-octets-base16 (octets start end table writer)
-  (declare (type (simple-array (unsigned-byte 8) (*)) octets))
-  (declare (type index start end))
-  (declare (type function writer))
-  (declare (type (simple-array base-char (16)) table))
-  (loop for i from start below end
-     do (let ((byte (aref octets i)))
-          (funcall writer (aref table (ldb (byte 4 4) byte)))
-          (funcall writer (aref table (ldb (byte 4 0) byte))))))
+(defun string->octets/base16 ()
+  )
 
-(defmethod encoding-tools ((format (eql :base16)))
-  (values #'encode-octets-base16 #'encoded-length/base16
-          *base16-encode-table*))
-
-(defmethod encoding-tools ((format (eql :hex)))
-  (values #'encode-octets-base16 #'encoded-length/base16
-          *hex-encode-table*))
+(defun octets->octets/decode/base16 ()
+  )
 
 (defun decode-octets-base16 (string start end length table writer)
   (declare (type index start end))
@@ -174,3 +162,10 @@
           #'decoded-length-base16
           (case-fold-decode-table *base16-decode-table*
                                   *base16-encode-table*)))
+
+(register-descriptor-and-constructors :base16 (base16-format-descriptor)
+                                      #'make-base16-encode-state
+                                      #'make-base16-encode-state)
+(register-descriptor-and-constructors :hex (base16-format-descriptor)
+                                      #'make-hex-encode-state
+                                      #'make-hex-encode-state)
