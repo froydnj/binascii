@@ -50,7 +50,7 @@
   (let ((input-index input-start)
         (output-index output-start)
         (bits (ascii85-encode-state-bits state))
-        (pending (ascii85-encode-state-pending))
+        (pending (ascii85-encode-state-pending state))
         (output-group (ascii85-encode-state-output-group state))
         (output-pending (ascii85-encode-state-output-pending state)))
     (declare (type index input-index output-index))
