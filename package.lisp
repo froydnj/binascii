@@ -3,4 +3,7 @@
 (cl:defpackage :binascii
   (:use :cl)
   (:shadow simple-string)
-  (:export #:encode-octets #:decode-octets))
+  (:export
+   #:encode-octets #:encode
+   #:decode-octets ;#:decode
+   ))
