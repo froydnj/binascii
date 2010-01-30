@@ -217,13 +217,12 @@ any necessary padding required by FORMAT."
         ((array (unsigned-byte 8) (*))
          (frob (fd-octets->octets/encode (state-descriptor state))))))))
 
-(defun decode-to-fresh-vector (string format-start start end)
+(defun decode-to-fresh-vector (string state start end)
+  (declare (type decode-state state))
   (multiple-value-bind (input start end)
       (array-data-and-offsets string start end)
-    (let* ((state (find-format-state format case-fold map01))
-           (fd (state-descriptor state))
+    (let* ((fd (state-descriptor state))
            (length (funcall (fd-decoded-length fd) (- end start))))
-      (declare (type decode-state state))
       (declare (type format-descriptor fd))
       (flet ((frob (v decode-fun)
                (funcall decode-fun state v string 0 length start end)))
@@ -234,12 +233,16 @@ any necessary padding required by FORMAT."
             (simple-octet-vector
              (frob octets (fd-octets->octets/decode fd)))))))))
 
+(defun decode (string format &key (start 0) end case-fold map01)
+  (decode-to-fresh-vector string (find-decoder format case-fold map01)
+                          start end))
+
 (defun decode-octets (destination string format &key (start 0) end
                       (output-start 0) output-end case-fold map01 finishp)
   "Decode the characters of STRING between START and END into octets
 according to FORMAT.  DECODED-LENGTH indicates the number of decoded
 octets to expect.  DESTINATION may be NIL."
-  (let ((state (find-format format case-fold map01)))
+  (let ((state (find-decoder format case-fold map01)))
     (declare (type decode-state state))
     (flet ((frob (decode-fun)
              (multiple-value-bind (input input-start input-end)
@@ -253,7 +256,7 @@ octets to expect.  DESTINATION may be NIL."
       (declare (inline frob))
       (etypecase string
         (null
-         (decode-to-fresh-vector string format-start start end))
+         (decode-to-fresh-vector string state start end))
         (string
          (frob (fd-string->octets (state-descriptor state)))
         ((array (unsigned-byte 8) (*))
