@@ -65,7 +65,7 @@
     (declare (type (integer 0 4) pending))
     (declare (type (integer 0 5) output-pending))
     (flet ((expand-for-output (bits output-group)
-             (loop for i from 4 downto 0
+             (loop for i from 0 to 4
                 do (multiple-value-bind (b index) (truncate bits 85)
                      (setf bits b
                            (aref output-group i) (aref table index)))
@@ -81,12 +81,10 @@
        DO-INPUT
          (when (< pending 4)
            (setf bits (ldb (byte 32 0)
-                           (logior (ash (aref input input-index)
-                                        (- 24 (* pending 8)))
-                                   bits)))
+                           (logior (ash bits 8) (aref input input-index))))
            (incf input-index)
-           (incf pending)
-           (go INPUT-CHECK))
+           (unless (= (incf pending) 4)
+             (go INPUT-CHECK)))
        EXPAND-FOR-OUTPUT
          (expand-for-output bits output-group)
        OUTPUT-CHECK
