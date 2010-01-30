@@ -154,8 +154,11 @@ octet vector with a fill pointer."
 (defun encode-to-fresh-vector (octets format start end element-type)
   (multiple-value-bind (input start end)
       (array-data-and-offsets octets start end)
-    (let* ((state (find-format-state format))
-           (length (funcall (encode-state-encoded-length state) (- end start))))
+    (let* ((state (find-encoder format))
+           (fd (state-descriptor state))
+           (length (funcall (fd-encoded-length fd) (- end start))))
+      (declare (type encode-state state))
+      (declare (type format-descriptor fd))
       (flet ((frob (etype encode-fun)
                (let ((v (make-array length :element-type etype)))
                  (funcall encode-fun state v octets
@@ -164,11 +167,11 @@ octet vector with a fill pointer."
         (declare (inline frob))
         (ecase (canonical-element-type element-type)
           (character
-           (frob 'character (encode-state-octets->string state)))
+           (frob 'character (fd-octets->string fd)))
           (base-char
-           (frob 'base-char (encode-state-octets->string state)))
+           (frob 'base-char (fd-octets->string fd)))
           (ub8
-           (frob '(unsigned-byte 8) (encode-state-octets->octets state))))))))
+           (frob '(unsigned-byte 8) (fd-octets->octets/encode fd))))))))
 
 (defun encode (octets format &key (start 0) end (element-type 'base-char))
   (encode-to-fresh-vector octets format start end element-type))
@@ -193,7 +196,10 @@ written are returned as multiple values.  ELEMENT-TYPE is ignored.
 
 If FINISHP is true, then in addition to any encoding of OCTETS, also output
 any necessary padding required by FORMAT."
-  (let ((format-state (find-format format)))
+  (let ((state (find-encoder format))
+        (fd (state-descriptor state)))
+    (declare (type encode-state state))
+    (declare (type format-descriptor fd))
     (flet ((frob (encode-fun)
              (multiple-value-bind (input input-start input-end)
                  (array-data-and-offsets octets start end)
@@ -206,33 +212,36 @@ any necessary padding required by FORMAT."
       (declare (inline frob))
       (etypecase destination
         (null
-         (encode-to-fresh-vector octets format-state start end element-type))
+         (encode-to-fresh-vector octets state start end element-type))
         (string
-         (frob (encode-state-octets->string format-state)))
+         (frob (fd-octets->string (state-descriptor state))))
         ((array (unsigned-byte 8) (*))
-         (frob (encode-state-octets->octets format-state)))))))
+         (frob (fd-octets->octets/encode (state-descriptor state))))))))
 
 (defun decode-to-fresh-vector (string format-start start end)
   (multiple-value-bind (input start end)
       (array-data-and-offsets string start end)
     (let* ((state (find-format-state format case-fold map01))
-           (length (funcall (decode-state-decoded-length state)
-                            (- end start))))
+           (fd (state-descriptor state))
+           (length (funcall (fd-decoded-length fd) (- end start))))
+      (declare (type decode-state state))
+      (declare (type format-descriptor fd))
       (flet ((frob (v decode-fun)
                (funcall decode-fun state v string 0 length start end)))
         (let ((octets (make-array length :element-type '(unsigned-byte 8))))
           (etypecase string
             (simple-string
-             (frob octets (decode-state-string->octets state)))
+             (frob octets (fd-string->octets fd)))
             (simple-octet-vector
-             (frob octets (decode-state-octets->octets state)))))))))
+             (frob octets (fd-octets->octets/decode fd)))))))))
 
 (defun decode-octets (destination string format &key (start 0) end
                       (output-start 0) output-end case-fold map01 finishp)
   "Decode the characters of STRING between START and END into octets
 according to FORMAT.  DECODED-LENGTH indicates the number of decoded
-octets to expect.  DESTINATION may be NIL.
-  (let ((format-state (find-format format case-fold map01)))
+octets to expect.  DESTINATION may be NIL."
+  (let ((state (find-format format case-fold map01)))
+    (declare (type decode-state state))
     (flet ((frob (decode-fun)
              (multiple-value-bind (input input-start input-end)
                  (array-data-and-offsets string start end)
@@ -247,9 +256,9 @@ octets to expect.  DESTINATION may be NIL.
         (null
          (decode-to-fresh-vector string format-start start end))
         (string
-         (frob (decode-state-string->octets format-state)))
+         (frob (fd-string->octets (state-descriptor state)))
         ((array (unsigned-byte 8) (*))
-         (frob (decode-state-octets->octets format-state)))))))
+         (frob (fd-octets->octets/decode (state-descriptor state)))))))))g
 ||#
 
 (defun decode-octets (destination string format
