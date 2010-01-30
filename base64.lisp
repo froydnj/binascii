@@ -9,8 +9,8 @@
   #.(coerce "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_" 'simple-base-string))
 
 (defun base64-format-descriptor ()
-  (let ((cell (load-time-value (list nil)))
-        (fd (car cell)))
+  (let* ((cell (load-time-value (list nil)))
+         (fd (car cell)))
     (if fd
         fd
         (setf (car cell)

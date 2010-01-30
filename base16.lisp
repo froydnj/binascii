@@ -12,8 +12,8 @@
 (declaim (type decode-table *base16-decode-table*))
 
 (defun base16-format-descriptor ()
-  (let ((cell (load-time-value (list nil)))
-        (fd (car cell)))
+  (let* ((cell (load-time-value (list nil)))
+         (fd (car cell)))
     (if fd
         fd
         (setf (car cell)

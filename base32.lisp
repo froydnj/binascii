@@ -8,8 +8,8 @@
   #.(coerce "0123456789ABCDEFGHIJKLMNOPQRSTUV" 'simple-base-string))
 
 (defun base32-format-descriptor ()
-  (let ((cell (load-time-value (list nil)))
-        (fd (car cell)))
+  (let* ((cell (load-time-value (list nil)))
+         (fd (car cell)))
     (if fd
         fd
         (setf (car cell)
