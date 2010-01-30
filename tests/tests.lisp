@@ -45,7 +45,7 @@ STRING contains any character whose CHAR-CODE is greater than 255."
          finally (return t)))))
 
 (defun encoding-test* (name input encoded-output decoded-length)
-  (let ((output (binascii:encode-octets nil input name :end decoded-length))
+  (let ((output (binascii:encode input name :end decoded-length))
         (decoded-input (binascii:decode-octets nil encoded-output name
                                                :decoded-length decoded-length)))
     (when (mismatch output encoded-output)
