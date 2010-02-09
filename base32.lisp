@@ -56,10 +56,10 @@
     (declare (type fixnum n-bits))
     (declare (type (simple-array fixnum (5)) n-pad-chars))
     (tagbody
-       PAD-CHECK
+     PAD-CHECK
        (when (base32-encode-state-finished-input-p state)
          (go PAD))
-       INPUT-CHECK
+     INPUT-CHECK
        (when (>= input-index input-end)
          (go DONE))
      DO-INPUT
