@@ -41,14 +41,24 @@ We are definitely going to over-allocate if we permit whitespace.
 Python's binascii module has a few we might consider adding.
 * convert to async API
 ** encode
-*** TODO base16
-*** TODO base32
-*** TODO base64
-*** TODO base85
-*** TODO ascii85
+*** DONE base16
+    CLOSED: [2010-02-09 Tue 22:26]
+*** DONE base32
+    CLOSED: [2010-02-09 Tue 22:26]
+*** DONE base64
+    CLOSED: [2010-02-09 Tue 22:27]
+*** DONE base85
+    CLOSED: [2010-02-09 Tue 22:27]
+*** DONE ascii85
+    CLOSED: [2010-02-09 Tue 22:27]
 ** decode
-*** TODO base16
-*** TODO base32
-*** TODO base64
-*** TODO base85
-*** TODO ascii85
+*** DONE base16
+    CLOSED: [2010-02-09 Tue 22:27]
+*** DONE base32
+    CLOSED: [2010-02-09 Tue 22:27]
+*** DONE base64
+    CLOSED: [2010-02-09 Tue 22:27]
+*** DONE base85
+    CLOSED: [2010-02-13 Sat 15:33]
+*** DONE ascii85
+    CLOSED: [2010-02-13 Sat 15:33]
