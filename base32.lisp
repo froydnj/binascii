@@ -273,53 +273,8 @@
   "Return the number of characters required to encode COUNT octets in Base32."
   (* (ceiling count 5) 8))
 
-(defun decode-octets-base32 (string start end length table writer)
-  (declare (type index start end))
-  (declare (type decode-table table))
-  (declare (type function writer))
-  (flet ((do-decode (transform)
-           (loop with bits of-type (unsigned-byte 16) = 0
-              with n-bits of-type (unsigned-byte 8) = 0
-              for i from start below end
-              for char = (aref string i)
-              for value = (dtref table (funcall transform char))
-              do (cond
-                   ((>= value 0)
-                    (setf bits (logand (logior (ash bits 5) value) #xffff))
-                    (incf n-bits 5)
-                    (when (>= n-bits 8)
-                      (decf n-bits 8)
-                      (funcall writer (logand (ash bits (- n-bits)) #xff))
-                      (setf bits (logand bits #xff))))
-                   ((eql (funcall transform char)
-                         (funcall transform #\=)))
-                   (t
-                    (error "bad character ~A in base32 decoding" char))))))
-    (declare (inline do-decode))
-    (decode-dispatch string #'do-decode)))
-
 (defun decoded-length-base32 (length)
   (* (ceiling length 8) 5))
-
-(defmethod decoding-tools ((format (eql :base32)) &key case-fold map01)
-  (declare (ignorable case-fold map01))
-  (values #'decode-octets-base32
-          #'decoded-length-base32
-          (let ((table *base32-decode-table*))
-            (when map01
-              (setf table (copy-seq table))
-              (setf (aref table (char-code #\0)) (aref table (char-code #\O)))
-              (case map01
-                ((#\I #\L) (setf (aref table (char-code #\1))
-                                 (aref table (char-code map01))))))
-            (when case-fold
-              (setf table (case-fold-decode-table table *base32-encode-table*)))
-            table)))
-
-(defmethod decoding-tools ((format (eql :base32hex)) &key case-fold map01)
-  (declare (ignorable case-fold map01))
-  (values #'decode-octets-base32 #'decoded-length-base32
-          *base32hex-decode-table*))
 
 (register-descriptor-and-constructors :base32 (base32-format-descriptor)
                                       #'make-base32-encode-state

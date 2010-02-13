@@ -46,8 +46,8 @@ STRING contains any character whose CHAR-CODE is greater than 255."
 
 (defun encoding-test* (name input encoded-output decoded-length)
   (let ((output (binascii:encode input name :end decoded-length))
-        (decoded-input (binascii:decode-octets nil encoded-output name
-                                               :decoded-length decoded-length)))
+        (decoded-input (binascii:decode encoded-output name
+                                        :decoded-length decoded-length)))
     (when (mismatch output encoded-output)
       (error "encoding ~A failed on ~A, produced ~A, wanted ~A"
              name input output encoded-output))
@@ -56,7 +56,7 @@ STRING contains any character whose CHAR-CODE is greater than 255."
              name encoded-output decoded-input input))))
 
 (defun encoding-test (name hexinput encoded-output &optional decoded-length)
-  (encoding-test* name (binascii:decode-octets nil hexinput :hex)
+  (encoding-test* name (binascii:decode hexinput :hex)
                   encoded-output decoded-length))
 
 (defun encoding-test-ascii (name ascii-input encoded-output

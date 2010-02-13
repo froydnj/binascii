@@ -222,46 +222,10 @@
   (base16-decoder state output input output-index output-end
                   input-index input-end lastp #'identity))
 
-(defun decode-octets-base16 (string start end length table writer)
-  (declare (type index start end))
-  (declare (type function writer))
-  (declare (type decode-table table))
-  (declare (optimize (speed 3)))
-  (flet ((do-decode (transform)
-           (loop for i from start below end by 2
-              do (let* ((char1 (aref string i))
-                        (char2 (aref string (1+ i)))
-                        (v1 (dtref table (funcall transform char1)))
-                        (v2 (dtref table (funcall transform char2))))
-                   (when (= v1 +dt-invalid+)
-                     (error "Invalid hex digit ~A" char1))
-                   (when (= v2 +dt-invalid+)
-                     (error "Invalid hex digit ~A" char2))
-                   (funcall writer (+ (* (logand v1 #xf) 16)
-                                      (logand v2 #xf)))))))
-    (declare (inline do-decode))
-    (decode-dispatch string #'do-decode)))
-
 (defun decoded-length-base16 (length)
   (unless (evenp length)
     (error "cannot decode an odd number of base16 characters"))
   (truncate length 2))
-
-(defmethod decoding-tools ((format (eql :base16)) &key case-fold map01)
-  (declare (ignorable case-fold map01))
-  (values #'decode-octets-base16
-          #'decoded-length-base16
-          (if case-fold
-              (case-fold-decode-table *base16-decode-table*
-                                      *base16-encode-table*)
-              *base16-decode-table*)))
-
-(defmethod decoding-tools ((format (eql :hex)) &key case-fold map01)
-  (declare (ignorable case-fold map01))
-  (values #'decode-octets-base16
-          #'decoded-length-base16
-          (case-fold-decode-table *base16-decode-table*
-                                  *base16-encode-table*)))
 
 (register-descriptor-and-constructors :base16 (base16-format-descriptor)
                                       #'make-base16-encode-state

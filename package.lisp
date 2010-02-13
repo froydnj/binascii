@@ -5,5 +5,5 @@
   (:shadow simple-string)
   (:export
    #:encode-octets #:encode
-   #:decode-octets ;#:decode
+   #:decode-octets #:decode
    ))

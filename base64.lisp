@@ -278,43 +278,8 @@
   (base64-decoder state output input output-index output-end
                   input-index input-end lastp #'identity))
 
-(defun decode-octets-base64 (string start end length table writer)
-  (declare (type index start end))
-  (declare (type function writer))
-  (declare (type decode-table table))
-  (flet ((do-decode (transform)
-           (loop with bits of-type (unsigned-byte 16) = 0
-              with n-bits of-type (unsigned-byte 8) = 0
-              for i from start below end
-              for char = (aref string i)
-              for value = (dtref table (funcall transform char))
-              do (cond
-                   ((>= value 0)
-                    (setf bits (logand (logior (ash bits 6) value) #xffff))
-                    (incf n-bits 6)
-                    (when (>= n-bits 8)
-                      (decf n-bits 8)
-                      (funcall writer (logand (ash bits (- n-bits)) #xff))
-                      (setf bits (logand bits #xff))))
-                   ((eql (funcall transform char)
-                         (funcall transform #\=)))
-                   ((= value +dt-invalid+)
-                    (error "bad character ~A in base64 decoding" char))))))
-    (declare (inline do-decode))
-    (decode-dispatch string #'do-decode)))
-
 (defun decoded-length-base64 (length)
   (* (ceiling length 4) 3))
-
-(defmethod decoding-tools ((format (eql :base64)) &key case-fold map01)
-  (declare (ignorable case-fold map01))
-  (values #'decode-octets-base64 #'decoded-length-base64
-          *base64-decode-table*))
-
-(defmethod decoding-tools ((format (eql :base64url)) &key case-fold map01)
-  (declare (ignorable case-fold map01))
-  (values #'decode-octets-base64 #'decoded-length-base64
-          *base64url-decode-table*))
 
 (register-descriptor-and-constructors :base64 (base64-format-descriptor)
                                       #'make-base64-encode-state
