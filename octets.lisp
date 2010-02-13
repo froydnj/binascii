@@ -56,7 +56,7 @@
            (frob 'character (fd-octets->string fd)))
           (base-char
            (frob 'base-char (fd-octets->string fd)))
-          (ub8
+          (octet
            (frob '(unsigned-byte 8) (fd-octets->octets/encode fd))))))))
 
 (defun encode (octets format &key (start 0) end (element-type 'base-char))
