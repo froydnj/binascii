@@ -23,6 +23,7 @@
 (defstruct (base32-encode-state
              (:include encode-state)
              (:copier nil)
+             (:predicate nil)
              (:constructor make-base32-encode-state
                            (&aux (descriptor (base32-format-descriptor))
                                  (table *base32-encode-table*)))
@@ -148,6 +149,7 @@
 (defstruct (base32-decode-state
              (:include decode-state)
              (:copier nil)
+             (:predicate nil)
              (:constructor %make-base32-decode-state
                            (table
                             &aux (descriptor (base32-format-descriptor)))))

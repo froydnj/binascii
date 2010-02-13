@@ -27,6 +27,7 @@
 (defstruct (base16-encode-state
              (:include encode-state)
              (:copier nil)
+             (:predicate nil)
              (:constructor make-base16-encode-state
                            (&aux (descriptor (base16-format-descriptor))
                                  (table *base16-encode-table*)))
@@ -126,6 +127,7 @@
 (defstruct (base16-decode-state
              (:include decode-state)
              (:copier nil)
+             (:predicate nil)
              (:constructor %make-base16-decode-state
                            (table
                             &aux (descriptor (base16-format-descriptor)))))

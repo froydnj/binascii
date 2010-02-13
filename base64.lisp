@@ -24,6 +24,7 @@
 (defstruct (base64-encode-state
              (:include encode-state)
              (:copier nil)
+             (:predicate nil)
              (:constructor make-base64-encode-state
                            (&aux (descriptor (base64-format-descriptor))
                                  (table *base64-encode-table*)))
@@ -172,6 +173,7 @@
 (defstruct (base64-decode-state
              (:include decode-state)
              (:copier nil)
+             (:predicate nil)
              (:constructor %make-base64-decode-state
                            (table
                             &aux (descriptor (base64-format-descriptor)))))

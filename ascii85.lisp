@@ -21,6 +21,7 @@
 (defstruct (ascii85-encode-state
              (:include encode-state)
              (:copier nil)
+             (:predicate nil)
              (:constructor make-ascii85-encode-state
                            (&aux (descriptor (ascii85-format-descriptor)))))
   (bits 0 :type (unsigned-byte 32))
@@ -156,6 +157,7 @@
 (defstruct (ascii85-decode-state
              (:include decode-state)
              (:copier nil)
+             (:predicate nil)
              (:constructor %make-ascii85-decode-state
                            (&aux (descriptor (ascii85-format-descriptor)))))
   (bits 0 :type (unsigned-byte 32))

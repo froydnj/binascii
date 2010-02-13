@@ -21,6 +21,7 @@
 (defstruct (base85-encode-state
              (:include encode-state)
              (:copier nil)
+             (:predicate nil)
              (:constructor make-base85-encode-state
                            (&aux (descriptor (base85-format-descriptor)))))
   ;; TODO: Clever hack for little-endian machines: fill in GROUP
@@ -160,6 +161,7 @@
 (defstruct (base85-decode-state
              (:include decode-state)
              (:copier nil)
+             (:predicate nil)
              (:constructor %make-base85-decode-state
                            (&aux (descriptor (base85-format-descriptor)))))
   (bits 0 :type (unsigned-byte 32))
