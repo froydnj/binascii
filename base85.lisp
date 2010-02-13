@@ -154,14 +154,126 @@
   (base85-encoder state output input output-start output-end
                   input-start input-end lastp #'identity))
 
-(defun string->octets/base85 ()
-  )
-
-(defun octets->octets/decode/base85 ()
-  )
-
 (defvar *base85-decode-table* (make-decode-table *base85-encode-table*))
 (declaim (type decode-table *base85-decode-table*))
+
+(defstruct (base85-decode-state
+             (:include decode-state)
+             (:copier nil)
+             (:constructor %make-base85-decode-state
+                           (&aux (descriptor (base85-format-descriptor)))))
+  (bits 0 :type (unsigned-byte 32))
+  (pending 0 :type (integer 0 5))
+  (output-pending 0 :type (integer 0 4))
+  (table *base85-decode-table* :read-only t :type decode-table))
+
+(defun make-base85-decode-state (case-fold map01)
+  (declare (ignore case-fold map01))
+  (%make-base85-decode-state))
+
+(defun base85-decoder (state output input
+                       output-index output-end
+                       input-index input-end lastp converter)
+  (declare (type base85-decode-state state))
+  (declare (type simple-octet-vector output))
+  (declare (type index output-index output-end input-index input-end))
+  (declare (type function converter))
+  (let ((bits (base85-decode-state-bits state))
+        (pending (base85-decode-state-pending state))
+        (output-pending (base85-decode-state-output-pending state))
+        (table (base85-decode-state-table state)))
+    (declare (type (unsigned-byte 32) bits))
+    (declare (type (integer 0 5) pending))
+    (declare (type (integer 0 4) output-pending))
+    (tagbody
+     FINISHED-CHECK
+       (when (base85-decode-state-finished-input-p state)
+         (go FLUSH-BITS))
+     OUTPUT-AVAILABLE-CHECK
+       (when (zerop output-pending)
+         (go INPUT-AVAILABLE-CHECK))
+     OUTPUT-SPACE-CHECK
+       (when (>= output-index output-end)
+         (go DONE))
+     DO-OUTPUT
+       (setf (aref output output-index)
+             (ldb (byte 8 (* (decf output-pending) 8)) bits))
+       (incf output-index)
+       (cond
+         ((zerop output-pending)
+          (setf bits 0)
+          (setf pending 0)
+          (setf output-pending 0)
+          (go INPUT-AVAILABLE-CHECK))
+         (t
+          (go OUTPUT-SPACE-CHECK)))
+     INPUT-AVAILABLE-CHECK
+       (when (>= input-index input-end)
+         (go DONE))
+     DO-INPUT
+       (cond
+         ((< pending 5)
+          (let* ((c (aref input input-index))
+                 (v (funcall converter c))
+                 (d (dtref table v)))
+            (when (= d +dt-invalid+)
+              (error "invalid base85 character ~A at position ~D" c input-index))
+            ;; FIXME: check for overflow.
+            (setf bits (+ (* bits 85) d))
+            (incf pending)
+            (incf input-index)
+            (go INPUT-AVAILABLE-CHECK)))
+         (t
+          (setf output-pending 4)
+          (go OUTPUT-SPACE-CHECK)))
+     DONE
+       (unless lastp
+         (go RESTORE-STATE))
+       (setf (base85-decode-state-finished-input-p state) t)
+       ;; We should *always* have a complete group or nothing at this
+       ;; point.
+     EOT-VALIDITY-CHECK
+       (when (<= 1 pending 4)
+         (error "invalid base85 input"))
+       (setf output-pending (if (zerop pending) 0 4))
+     FLUSH-BITS
+       (when (zerop output-pending)
+         (go RESTORE-STATE))
+     FLUSH-OUTPUT-CHECK
+       (when (>= output-index output-end)
+         (go RESTORE-STATE))
+     DO-FLUSH-OUTPUT
+       (when (> output-pending 0)
+         (setf (aref output output-index)
+               (ldb (byte 8 (* (decf output-pending) 8)) bits))
+         (incf output-index)
+         (cond
+           ((zerop output-pending)
+            (setf bits 0)
+            (setf pending 0)
+            (setf output-pending 0)
+            (go RESTORE-STATE))
+           (t
+            (go FLUSH-OUTPUT-CHECK))))
+     RESTORE-STATE
+       (setf (base85-decode-state-bits state) bits
+             (base85-decode-state-pending state) pending
+             (base85-decode-state-output-pending state) output-pending))
+    (values input-index output-index)))
+
+(defun string->octets/base85 (state output input
+                              output-index output-end
+                              input-index input-end lastp)
+  (declare (type simple-string input))
+  (base85-decoder state output input output-index output-end
+                  input-index input-end lastp #'char-code))
+
+(defun octets->octets/decode/base85 (state output input
+                                     output-index output-end
+                                     input-index input-end lastp)
+  (declare (type simple-octet-vector input))
+  (base85-decoder state output input output-index output-end
+                  input-index input-end lastp #'identity))
 
 (defun decoded-length-base85 (length)
   (multiple-value-bind (n-groups rem) (truncate length 5)
@@ -200,5 +312,5 @@
 
 (register-descriptor-and-constructors :base85 (base85-format-descriptor)
                                       #'make-base85-encode-state
-                                      #'make-base85-encode-state)
+                                      #'make-base85-decode-state)
 
