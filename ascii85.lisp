@@ -42,15 +42,13 @@
 
 (declaim (inline ascii85-encode))
 (defun ascii85-encoder (state output input
-                        output-start output-end
-                        input-start input-end lastp converter)
+                        output-index output-end
+                        input-index input-end lastp converter)
   (declare (type ascii85-encode-state state))
   (declare (type simple-octet-vector input))
-  (declare (type index output-start output-end input-start input-end))
+  (declare (type index output-index output-end input-index input-end))
   (declare (type function converter))
-  (let ((input-index input-start)
-        (output-index output-start)
-        (bits (ascii85-encode-state-bits state))
+  (let ((bits (ascii85-encode-state-bits state))
         (pending (ascii85-encode-state-pending state))
         (output-group (ascii85-encode-state-output-group state))
         (output-pending (ascii85-encode-state-output-pending state)))
@@ -133,7 +131,7 @@
          (setf (ascii85-encode-state-bits state) bits
                (ascii85-encode-state-pending state) pending
                (ascii85-encode-state-output-pending state) output-pending))
-      (values (- input-index input-start) (- output-index output-start)))))
+      (values input-index output-index))))
 
 (defun octets->octets/encode/ascii85 (state output input
                                       output-start output-end

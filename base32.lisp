@@ -38,19 +38,17 @@
 
 (declaim (inline base32-encoder))
 (defun base32-encoder (state output input
-                       output-start output-end
-                       input-start input-end lastp converter)
+                       output-index output-end
+                       input-index input-end lastp converter)
   (declare (type base32-encode-state state))
   (declare (type simple-octet-vector input))
-  (declare (type index output-start output-end input-start input-end))
+  (declare (type index output-index output-end input-index input-end))
   (declare (type function converter))
-  (let* ((input-index input-start)
-         (output-index output-start)
-         (bits (base32-encode-state-bits state))
-         (n-bits (base32-encode-state-n-bits state))
-         (table (base32-encode-state-table state))
-         (n-pad-chars #.(make-array 5 :initial-contents '(0 4 1 6 3)
-                                    :element-type 'fixnum)))
+  (let ((bits (base32-encode-state-bits state))
+        (n-bits (base32-encode-state-n-bits state))
+        (table (base32-encode-state-table state))
+        (n-pad-chars #.(make-array 5 :initial-contents '(0 4 1 6 3)
+                                   :element-type 'fixnum)))
                       
     (declare (type index input-index output-index))
     (declare (type (unsigned-byte 16) bits))
@@ -112,7 +110,7 @@
      RESTORE-STATE
        (setf (base32-encode-state-bits state) bits
              (base32-encode-state-n-bits state) n-bits))
-    (values (- input-index input-start) (- output-index output-start))))
+    (values input-index output-index)))
 
 (defun octets->octets/encode/base32 (state output input
                                      output-start output-end

@@ -38,17 +38,15 @@
 
 (declaim (inline base64-encoder))
 (defun base64-encoder (state output input
-                       output-start output-end
-                       input-start input-end lastp converter)
+                       output-index output-end
+                       input-index input-end lastp converter)
   (declare (type base64-encode-state state))
   (declare (type simple-octet-vector input))
-  (declare (type index output-start output-end input-start input-end))
+  (declare (type index output-index output-end input-index input-end))
   (declare (type function converter))
-  (let* ((input-index input-start)
-         (output-index output-start)
-         (bits (base64-encode-state-bits state))
-         (n-bits (base64-encode-state-n-bits state))
-         (table (base64-encode-state-table state)))
+  (let ((bits (base64-encode-state-bits state))
+        (n-bits (base64-encode-state-n-bits state))
+        (table (base64-encode-state-table state)))
     (declare (type index input-index output-index))
     (declare (type (unsigned-byte 16) bits))
     (declare (type fixnum n-bits))
@@ -140,7 +138,7 @@
      RESTORE-STATE
        (setf (base64-encode-state-bits state) bits
              (base64-encode-state-n-bits state) n-bits))
-    (values (- input-index input-start) (- output-index output-start))))
+    (values input-index output-index)))
 
 (defun octets->octets/encode/base64 (state output input
                                      output-start output-end

@@ -76,9 +76,12 @@ If ELEMENT-TYPE is a subtype of CHARACTER, then DESTINATION may also be
 a string.  Similarly, if ELEMENT-TYPE is (UNSIGNED-BYTE 8) or an
 equivalent type, then DESTINATION may be an octet vector.  In this case,
 OUTPUT-START and OUTPUT-END are used to determine the portion of
-DESTINATION where the encoded output may be placed.  The number of
-octets encoded and the number of characters or bytes, respectively,
-written are returned as multiple values.  ELEMENT-TYPE is ignored.
+DESTINATION where the encoded output may be placed.
+
+If DESTINATION is not NIL, The index of the first input element that was
+not read and the index of the first output element that was not updated
+are returned as multiple values.  respectively, written are returned as
+multiple values.  ELEMENT-TYPE is ignored.
 
 If FINISHP is true, then in addition to any encoding of OCTETS, also output
 any necessary padding required by FORMAT."

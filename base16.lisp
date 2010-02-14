@@ -41,15 +41,13 @@
 
 (declaim (inline base16-encoder))
 (defun base16-encoder (state output input
-                       output-start output-end
-                       input-start input-end lastp converter)
+                       output-index output-end
+                       input-index input-end lastp converter)
   (declare (type base16-encode-state state))
   (declare (type simple-octet-vector input))
-  (declare (type index output-start output-end input-start input-end))
+  (declare (type index output-index output-end input-index input-end))
   (declare (type function converter))
-  (let ((input-index input-start)
-        (output-index output-start)
-        (bits (base16-encode-state-bits state))
+  (let ((bits (base16-encode-state-bits state))
         (n-bits (base16-encode-state-n-bits state))
         (table (base16-encode-state-table state)))
     (declare (type index input-index output-index))
@@ -98,7 +96,7 @@
      RESTORE-STATE
        (setf (base16-encode-state-bits state) bits
              (base16-encode-state-n-bits state) n-bits))
-    (values (- input-index input-start) (- output-index output-start))))
+    (values input-index output-index)))
 
 (defun encoded-length/base16 (count)
   "Return the number of characters required to encode COUNT octets in Base16."
