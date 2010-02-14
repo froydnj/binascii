@@ -32,7 +32,7 @@
                            (&aux (descriptor (base64-format-descriptor))
                                  (table *base64url-encode-table*))))
   (bits 0 :type (unsigned-byte 16))
-  (n-bits 0 :type fixnum)
+  (n-bits 0 :type (unsigned-byte 8))
   (table *base64-encode-table* :read-only t :type (simple-array base-char (64)))
   (padding-remaining 0 :type (integer 0 3)))
 
@@ -49,7 +49,7 @@
         (table (base64-encode-state-table state)))
     (declare (type index input-index output-index))
     (declare (type (unsigned-byte 16) bits))
-    (declare (type fixnum n-bits))
+    (declare (type (unsigned-byte 8) n-bits))
     (tagbody
      PAD-CHECK
        (when (base64-encode-state-finished-input-p state)

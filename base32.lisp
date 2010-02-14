@@ -31,7 +31,7 @@
                            (&aux (descriptor (base32-format-descriptor))
                                  (table *base32hex-encode-table*))))
   (bits 0 :type (unsigned-byte 16))
-  (n-bits 0 :type fixnum)
+  (n-bits 0 :type (unsigned-byte 8))
   (table *base32-encode-table* :read-only t
          :type (simple-array base-char (32)))
   (padding-remaining 0 :type (integer 0 6)))
@@ -52,7 +52,7 @@
                       
     (declare (type index input-index output-index))
     (declare (type (unsigned-byte 16) bits))
-    (declare (type fixnum n-bits))
+    (declare (type (unsigned-byte 8) n-bits))
     (declare (type (simple-array fixnum (5)) n-pad-chars))
     (tagbody
      PAD-CHECK
