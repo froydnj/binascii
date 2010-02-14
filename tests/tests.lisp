@@ -69,7 +69,7 @@ STRING contains any character whose CHAR-CODE is greater than 255."
         (cons :encoding-ascii-test 'encoding-test-ascii)))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defparameter *encodings* '(:base16 :base32 :base32hex :base64 :base85)))
+  (defparameter *encodings* '(:base16 :base32 :base32hex :base64 :base85 :ascii85)))
 
 #.(loop for e in *encodings*
      collect `(rtest:deftest ,(intern (format nil "~A/TO-NIL/BASE-CHAR" e))
