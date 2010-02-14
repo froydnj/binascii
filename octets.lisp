@@ -47,9 +47,13 @@
       (declare (type format-descriptor fd))
       (flet ((frob (etype encode-fun)
                (let ((v (make-array length :element-type etype)))
-                 (funcall encode-fun state v input
-                          0 length start end t)
-                 v)))
+                 (multiple-value-bind (input-index output-index)
+                     (funcall encode-fun state v input
+                              0 length start end t)
+                   (declare (ignore input-index))
+                   (if (= output-index length)
+                       v
+                       (subseq v 0 output-index))))))
         (declare (inline frob))
         (ecase (canonicalize-element-type element-type)
           (character
