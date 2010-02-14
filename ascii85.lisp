@@ -28,6 +28,7 @@
   (pending 0 :type (integer 0 4))
   (output-group (make-array 5 :element-type 'base-char)
                 :read-only t :type (simple-array base-char (5)))
+  (group-index 0 :type (integer 0 4))
   (output-pending 0 :type (integer 0 5))
   (table *ascii85-encode-table* :read-only t
          :type (simple-array base-char (85))))
@@ -40,7 +41,7 @@
           complete
           (+ complete r 1)))))
 
-(declaim (inline ascii85-encode))
+(declaim (notinline ascii85-encoder))
 (defun ascii85-encoder (state output input
                         output-index output-end
                         input-index input-end lastp converter)
@@ -51,18 +52,19 @@
   (let ((bits (ascii85-encode-state-bits state))
         (pending (ascii85-encode-state-pending state))
         (output-group (ascii85-encode-state-output-group state))
+        (group-index (ascii85-encode-state-group-index state))
         (output-pending (ascii85-encode-state-output-pending state)))
     (declare (type index input-index output-index))
     (declare (type (unsigned-byte 32) bits))
     (declare (type (integer 0 4) pending))
-    (declare (type (integer 0 5) output-pending))
+    (declare (type (integer 0 5) output-pending group-index))
     (flet ((expand-for-output (bits output-group)
              (cond
                ((zerop bits)
                 (setf (aref output-group 0) #\z)
                 1)
                (t
-                (loop for i from 45 downto 0
+                (loop for i from 4 downto 0
                    do (multiple-value-bind (b index) (truncate bits 85)
                         (setf bits b
                               (aref output-group i)
@@ -85,20 +87,24 @@
            (incf pending)
            (go INPUT-CHECK))
        EXPAND-FOR-OUTPUT
-         (setf output-pending (expand-for-output bits output-group))
+         (setf output-pending (expand-for-output bits output-group)
+               group-index 0)
        OUTPUT-CHECK
          (when (>= output-index output-end)
            (go DONE))
        DO-OUTPUT
-         (when (> output-pending 0)
+         (when (< group-index output-pending)
            (setf (aref output output-index)
                  (funcall converter
-                          (aref output-group (decf output-pending))))
+                          (aref output-group group-index)))
+           (incf group-index)
            (incf output-index)
            (cond
-             ((zerop output-pending)
+             ((= group-index output-pending)
               (setf bits 0)
               (setf pending 0)
+              (setf group-index 0)
+              (setf output-pending 0)
               (go INPUT-CHECK))
              (t
               (go OUTPUT-CHECK))))
@@ -107,7 +113,7 @@
            (go RESTORE-STATE))
          (setf (ascii85-encode-state-finished-input-p state) t)
          (setf output-pending (expand-for-output bits output-group)
-               output-pending (1+ pending))
+               group-index 0)
        FLUSH-BITS
          (when (zerop output-pending)
            (go RESTORE-STATE))
@@ -115,21 +121,25 @@
          (when (>= output-index output-end)
            (go RESTORE-STATE))
        DO-FLUSH-OUTPUT
-         (when (> output-pending 0)
+         (when (< group-index output-pending)
            (setf (aref output output-index)
                  (funcall converter
-                          (aref output-group (decf output-pending))))
+                          (aref output-group group-index)))
+           (incf group-index)
            (incf output-index)
            (cond
-             ((zerop output-pending)
+             ((= group-index output-pending)
               (setf bits 0)
               (setf pending 0)
+              (setf group-index 0)
+              (setf output-pending 0)
               (go RESTORE-STATE))
              (t
               (go FLUSH-OUTPUT-CHECK))))
        RESTORE-STATE
          (setf (ascii85-encode-state-bits state) bits
                (ascii85-encode-state-pending state) pending
+               (ascii85-encode-state-group-index state) group-index
                (ascii85-encode-state-output-pending state) output-pending))
       (values input-index output-index))))
 
@@ -213,7 +223,7 @@
                  (v (funcall converter c))
                  (d (dtref table v)))
             (cond
-              ((eql c (funcall converter #\z))
+              ((eql v (funcall converter #\z))
                (unless (zerop pending)
                  (error "z found in the middle of an ascii85 group"))
                (incf input-index)
@@ -234,12 +244,16 @@
        (unless lastp
          (go RESTORE-STATE))
        (setf (ascii85-decode-state-finished-input-p state) t)
-       ;; We should *always* have a complete group or nothing at this
-       ;; point.
      EOT-VALIDITY-CHECK
-       (when (<= 1 pending 4)
+       (when (zerop pending)
+         (go RESTORE-STATE))
+       (when (= pending 1)
          (error "invalid ascii85 input"))
-       (setf output-pending (if (zerop pending) 0 4))
+       (dotimes (i (- 5 pending))
+         (setf bits (+ (* bits 85) 84)))
+       (setf output-pending (1- pending)
+             bits (ldb (byte (* output-pending 8) (* (- 4 output-pending) 8))
+                       bits))
      FLUSH-BITS
        (when (zerop output-pending)
          (go RESTORE-STATE))
