@@ -36,7 +36,12 @@
              (:copier nil)
              (:predicate nil)
              (:constructor nil))
-  (descriptor (required-argument) :type format-descriptor :read-only t))
+  (descriptor (required-argument) :type format-descriptor :read-only t)
+  ;; FINISHED-INPUT-P is either T or NIL depending on whether we have
+  ;; seen all of the input.
+  (finished-input-p nil)
+  ;; Likewise for FINISHED-OUTPUT-P.
+  (finished-output-p nil))
 
 (defstruct (encode-state
              (:include state)
@@ -46,16 +51,11 @@
   ;; LINE-BREAK describes after how many characters we should be
   ;; inserting newlines into the encoded output.  It is zero if we
   ;; should never insert newlines.
-  (line-break 0 :type (integer 0 *))
-  ;; FINISHED-INPUT-P is either T or NIL depending on whether we have
-  ;; seen all of the input to be encoded.
-  (finished-input-p nil))
+  (line-break 0 :type (integer 0 *)))
 
 (defstruct (decode-state
              (:include state)
              (:copier nil)
              (:predicate nil)
              (:constructor nil))
-  ;; FINISHED-INPUT-P is either T or NIL depending on whether we have
-  ;; seen all of the input to be encoded.
-  (finished-input-p nil))
+  )
