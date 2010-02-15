@@ -44,11 +44,26 @@ STRING contains any character whose CHAR-CODE is greater than 255."
               (apply test-function name (cdr form)))))
          finally (return t)))))
 
+(defvar *coding-output-element-type* 'base-char)
+
 (defun encoding-test* (name input encoded-output decoded-length)
-  (let ((output (binascii:encode input name :end decoded-length))
-        (decoded-input (binascii:decode encoded-output name
-                                        :decoded-length decoded-length)))
-    (when (mismatch output encoded-output)
+  (let* ((output (binascii:encode input name :end decoded-length
+                                  :element-type *coding-output-element-type*))
+         (mismatchable-encoded-output
+          (cond
+            ((or (eql *coding-output-element-type* 'base-char)
+                 (eql *coding-output-element-type* 'character))
+             encoded-output)
+            ((equal *coding-output-element-type* '(unsigned-byte 8))
+             (ascii-string-to-octets encoded-output))
+            (t
+             (error "unknown value for *CODING-OUTPUT-ELEMENT-TYPE* ~A"
+                    *coding-output-element-type*))))
+         (decoded-input (binascii:decode mismatchable-encoded-output name
+                                         :decoded-length decoded-length)))
+    (unless (typep output `(array ,*coding-output-element-type* (*)))
+      (error "encoded output not of proper type"))
+    (when (mismatch output mismatchable-encoded-output)
       (error "encoding ~A failed on ~A, produced ~A, wanted ~A"
              name input output encoded-output))
     (when (mismatch input decoded-input :end1 decoded-length :end2 decoded-length)
@@ -71,8 +86,15 @@ STRING contains any character whose CHAR-CODE is greater than 255."
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defparameter *encodings* '(:base16 :base32 :base32hex :base64 :base85 :ascii85)))
 
-#.(loop for e in *encodings*
-     collect `(rtest:deftest ,(intern (format nil "~A/TO-NIL/BASE-CHAR" e))
-                  (run-test-vector-file ,e *encoding-tests*)
-                t) into forms
-     finally (return `(progn ,@forms)))
+#.(flet ((deftest-form (e eltype)
+             (let ((pretty-name (if (equal eltype '(unsigned-byte 8))
+                                    'ub8
+                                    eltype)))
+               `(rtest:deftest ,(intern (format nil "~A/TO-NIL/~A" e pretty-name))
+                  (let ((*coding-output-element-type* ',eltype))
+                    (run-test-vector-file ,e *encoding-tests*))
+                  t))))
+    (loop for e in *encodings*
+     append (loop for eltype in '(base-char character (unsigned-byte 8))
+                  collect (deftest-form e eltype)) into forms
+     finally (return `(progn ,@forms))))
