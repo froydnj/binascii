@@ -223,7 +223,9 @@
                  (v (funcall converter c))
                  (d (dtref table v)))
             (cond
-              ((eql v (funcall converter #\z))
+              ((eql v (if (typep input 'simple-octet-vector)
+                          (char-code #\z)
+                          (funcall converter #\z)))
                (unless (zerop pending)
                  (error "z found in the middle of an ascii85 group"))
                (incf input-index)
