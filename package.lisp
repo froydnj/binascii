@@ -7,6 +7,8 @@
    #:encode-octets #:encode
    #:decode-octets #:decode
 
+   #:make-encoder #:make-decoder
+
    ;; Format names.
    #:base16
    #:hex

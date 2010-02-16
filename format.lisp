@@ -30,21 +30,25 @@
         (cons encoder-constructor decoder-constructor))
   format)
 
+(defun make-encoder (format)
+  "Return an ENCODE-STATE for FORMAT.  Error if FORMAT is not a known
+encoding format."
+  (let ((constructor (find-encode-state-constructor-or-lose format)))
+    (funcall (the function constructor))))
+
 (defun find-encoder (format)
-  "Return the appropriate ENCODE-STATE for FORMAT."
   (etypecase format
-    (symbol
-       (let ((constructor (find-encode-state-constructor-or-lose format)))
-         (funcall (the function constructor))))
-    (encode-state
-       format)))
+    (symbol (make-encoder format))
+    (encode-state format)))
+
+(defun make-decoder (format case-fold map01)
+  "Return a DECODE-STATE for FORMAT.  Use CASE-FOLD and MAP01 to
+parameterize the returned decoder.  Error if FORMAT is not a known
+decoding format."
+  (let ((constructor (find-decode-state-constructor-or-lose format)))
+    (funcall (the function constructor) case-fold map01)))
 
 (defun find-decoder (format case-fold map01)
-  "Return the appropriate DECODE-STATE for FORMAT.  If FORMAT is a symbol,
-use CASE-FOLD and MAP01 to parameterize the returned decoder."
   (etypecase format
-    (symbol
-       (let ((constructor (find-decode-state-constructor-or-lose format)))
-         (funcall (the function constructor) case-fold map01)))
-    (decode-state
-       format)))
+    (symbol (make-decoder format case-fold map01))
+    (decode-state format)))
