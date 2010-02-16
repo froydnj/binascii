@@ -7,8 +7,9 @@ that paradigm up with variable-sized groups.
 * fix ascii85 encoding
 Must SHRINK-VECTOR on NIL destination in case we encoded 'z'.
 * line-breaking encoded output
-This should be easy; just pass a slightly different closure into this
-main encoding function.
+This is probably really only doable for encoding to freshly-consed vectors.
+Certainly it's much more doable for clients with the upcoming async
+interface.
 * compiler macros for optimizing constant-format versions of encode/decode
 The trick will be to do this without adding too much bloat.  Will
 probably only do this for a NIL destination, as that's the case where we
@@ -27,7 +28,37 @@ Trying to do minimal allocation; might have to just suck it up and
 admit that we are going to over-allocate fairly often.
 
 Especially in the ascii85 case, over-allocation is just a fact of life.
+* figure out how to make the library fast for non-CMUCL/SBCL
+We might just have to accept a bit of code bloat everyplace else, by
+duplicating logic/functions for simple vs. non-simple.
+I don't want to restrict clients to always using simple arrays everywhere.
+
+CCL looks like it ought to be able to get around this, but I can't find
+the magic call.
 * ignoring whitespace when decoding
 We are definitely going to over-allocate if we permit whitespace.
 * other formats
 Python's binascii module has a few we might consider adding.
+* convert to async API
+** encode
+*** DONE base16
+    CLOSED: [2010-02-09 Tue 22:26]
+*** DONE base32
+    CLOSED: [2010-02-09 Tue 22:26]
+*** DONE base64
+    CLOSED: [2010-02-09 Tue 22:27]
+*** DONE base85
+    CLOSED: [2010-02-09 Tue 22:27]
+*** DONE ascii85
+    CLOSED: [2010-02-09 Tue 22:27]
+** decode
+*** DONE base16
+    CLOSED: [2010-02-09 Tue 22:27]
+*** DONE base32
+    CLOSED: [2010-02-09 Tue 22:27]
+*** DONE base64
+    CLOSED: [2010-02-09 Tue 22:27]
+*** DONE base85
+    CLOSED: [2010-02-13 Sat 15:33]
+*** DONE ascii85
+    CLOSED: [2010-02-13 Sat 15:33]
