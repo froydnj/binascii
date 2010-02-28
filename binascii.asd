@@ -39,7 +39,7 @@
   :components ((:module "tests"
                         :components
                         ((:file "rt")
-                         (:file "tests")
+                         (:file "tests" :depends-on ("rt"))
                          (:test-vector-file "ascii85")
                          (:test-vector-file "base85")
                          (:test-vector-file "base64")
