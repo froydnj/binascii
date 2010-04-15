@@ -35,7 +35,10 @@
   #+cmu
   (lisp::with-array-data ((v v) (start start) (end end))
     (values v start end))
-  #-(or sbcl cmu)
+  #+ccl
+  (multiple-value-bind (v* offset) (ccl::array-data-and-offset v)
+    (values v* (+ start offset) (+ (or end (length v)) offset)))
+  #-(or sbcl cmu ccl)
   (values v start (or end (length v))))
 
 (defun encode-to-fresh-vector (octets state start end element-type)
