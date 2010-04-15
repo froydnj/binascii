@@ -10,8 +10,8 @@
 
 (deftype simple-string ()
   #+sbcl '(and cl:simple-string (not (simple-array nil (*))))
-  #+cmu cl:simple-string
-  #-(or sbcl cmu) cl:string)
+  #+cmu 'cl:simple-string
+  #-(or sbcl cmu) 'cl:string)
 
 (defun required-argument ()
   (error "Required argument not provided"))
