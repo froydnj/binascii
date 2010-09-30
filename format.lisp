@@ -21,7 +21,7 @@
   (or (cdr (gethash format *format-state-constructors*))
       (unknown-format-error format)))
 
-(defun register-descriptor-and-constructors (format
+(defun register-descriptor-and-constructors (format-names
                                              descriptor
                                              encoder-constructor
                                              decoder-constructor)
@@ -29,17 +29,31 @@
            (setf (gethash format *format-descriptors*) descriptor)
            (setf (gethash format *format-state-constructors*)
                  (cons encoder-constructor decoder-constructor))))
-    (add-with-specified-format format)
-    (add-with-specified-format (intern (symbol-name format)
-                                       (find-package "BINASCII")))
-    format))
+    (mapc #'add-with-specified-format format-names)
+    format-names))
 
 (defmacro define-format (name descriptor-fun encoder-constructor
-                          decoder-constructor)
-  `(register-descriptor-and-constructors ,name
-                                         (,descriptor-fun)
-                                         (function ,encoder-constructor)
-                                         (function ,decoder-constructor)))
+                         decoder-constructor)
+  (let ((*package* (find-package "BINASCII")))
+    (let ((binascii-name (intern (symbol-name name)))
+          (encode-fun (intern (format nil "ENCODE-~A" name)))
+          (decode-fun (intern (format nil "DECODE-~A" name))))
+      `(progn
+         (export ',encode-fun)
+         (defun ,encode-fun (octets &key (start 0) end
+                             (element-type 'base-char))
+           (encode-to-fresh-vector octets (funcall #',encoder-constructor)
+                                   start end element-type))
+         (export ',encode-fun)
+         (defun ,decode-fun (string &key (start 0) end
+                             case-fold map01 decoded-length)
+           (decode-to-fresh-vector string (funcall #',decoder-constructor
+                                                   case-fold map01)
+                                   start end decoded-length))
+         (register-descriptor-and-constructors '(,name ,binascii-name)
+                                               (,descriptor-fun)
+                                               (function ,encoder-constructor)
+                                               (function ,decoder-constructor))))))
 
 (defun make-encoder (format)
   "Return an ENCODE-STATE for FORMAT.  Error if FORMAT is not a known
