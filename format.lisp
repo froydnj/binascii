@@ -25,10 +25,14 @@
                                              descriptor
                                              encoder-constructor
                                              decoder-constructor)
-  (setf (gethash format *format-descriptors*) descriptor)
-  (setf (gethash format *format-state-constructors*)
-        (cons encoder-constructor decoder-constructor))
-  format)
+  (flet ((add-with-specified-format (format)
+           (setf (gethash format *format-descriptors*) descriptor)
+           (setf (gethash format *format-state-constructors*)
+                 (cons encoder-constructor decoder-constructor))))
+    (add-with-specified-format format)
+    (add-with-specified-format (intern (symbol-name format)
+                                       (find-package "BINASCII")))
+    format))
 
 (defun make-encoder (format)
   "Return an ENCODE-STATE for FORMAT.  Error if FORMAT is not a known
