@@ -1,0 +1,10 @@
+binascii is a Common Lisp library for converting binary data to ASCII
+text of some kind.  Such conversions are common in email protocols (for
+encoding attachments to support old non-8-bit clean transports) or
+encoding binary data in HTTP and XML applications.  binascii supports
+the encodings described in RFC 4648: base64, base32, base16, and
+variants.  It also supports base85, used in Adobe's PostScript and PDF
+document formats, and a variant called ascii85, used by git for binary
+diff files.
+
+It is documented, flexible, and fast, and comes with a BSD license.
