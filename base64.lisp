@@ -286,9 +286,7 @@
 (defun decoded-length-base64 (length)
   (* (ceiling length 4) 3))
 
-(register-descriptor-and-constructors :base64 (base64-format-descriptor)
-                                      #'make-base64-encode-state
-                                      #'make-base64-decode-state)
-(register-descriptor-and-constructors :base64url (base64-format-descriptor)
-                                      #'make-base64url-encode-state
-                                      #'make-base64url-decode-state)
+(define-format :base64 base64-format-descriptor
+  make-base64-encode-state make-base64-decode-state)
+(define-format :base64url base64-format-descriptor
+  make-base64url-encode-state make-base64url-decode-state)

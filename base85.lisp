@@ -281,7 +281,5 @@
       (error "base85 input length ~D must be a multiple of 5" length))
     (* n-groups 4)))
 
-(register-descriptor-and-constructors :base85 (base85-format-descriptor)
-                                      #'make-base85-encode-state
-                                      #'make-base85-decode-state)
-
+(define-format :base85 base85-format-descriptor
+  make-base85-encode-state make-base85-decode-state)
