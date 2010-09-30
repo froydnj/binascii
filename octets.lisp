@@ -30,11 +30,15 @@
 (defun array-data-and-offsets (v start end)
   "Like ARRAY-DISPLACEMENT, only more useful."
   #+sbcl
-  (sb-kernel:with-array-data ((v v) (start start) (end end))
-    (values v start end))
+  (let ((end (or end (length v))))
+    (sb-kernel:with-array-data ((v v) (real-start start) (real-end end))
+      (declare (ignore real-end))
+      (values v start (+ real-start (- end start)))))
   #+cmu
-  (lisp::with-array-data ((v v) (start start) (end end))
-    (values v start end))
+  (let ((end (or end (length v))))
+    (lisp::with-array-data ((v v) (real-start start) (real-end end))
+      (declare (ignore real-end))
+      (values v start (+ real-start (- end start)))))
   #+ccl
   (multiple-value-bind (v* offset) (ccl::array-data-and-offset v)
     (values v* (+ start offset) (+ (or end (length v)) offset)))
