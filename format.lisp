@@ -34,6 +34,13 @@
                                        (find-package "BINASCII")))
     format))
 
+(defmacro define-format (name descriptor-fun encoder-constructor
+                          decoder-constructor)
+  `(register-descriptor-and-constructors ,name
+                                         (,descriptor-fun)
+                                         (function ,encoder-constructor)
+                                         (function ,decoder-constructor)))
+
 (defun make-encoder (format)
   "Return an ENCODE-STATE for FORMAT.  Error if FORMAT is not a known
 encoding format."
