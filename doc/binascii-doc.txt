@@ -1,0 +1,98 @@
+(:author "Nathan Froyd"
+ :email "froydnj@gmail.com"
+ :package "binascii"
+ :cl-package "BINASCII"
+ :version #.(asdf:component-version (asdf:find-system :binascii))
+ :homepage "http://www.method-combination.net/lisp/binascii/"
+ :download "http://www.method-combination.net/lisp/files/binascii.tar.gz")
+
+(:h1 ${package})
+
+(:p ${package} " is a Common Lisp library for converting binary data to
+ASCII text of some kind.  Such conversions are common in email protocols
+(for encoding attachments to support old non-8-bit clean transports) or
+encoding binary data in HTTP and XML applications.  " ${package}
+supports the encodings described in " ((:a href
+"http://tools.ietf.org/html/rfc4648") "RFC 4648") ": base64, base32,
+base16, and variants.  It also supports base85, used in Adobe's
+PostScript and PDF document formats, and a variant called ascii85, used
+by git for binary diff files.")
+
+(:p ${package} " was written by " ${author} " (" ${email} ").")
+
+(:h2 "Installation")
+
+(:p ${package} " can be downloaded at " (:url ${download} ${download})
+".  The latest version is " ${version} ".")
+
+(:p "It comes with an ASDF system definition, so " `(ASDF:OOS
+'ASDF:LOAD-OP :BINASCII)` " should be all that you need to get started.
+The testsuite can be run by substituting " `ASDF:TEST-OP` " for "
+`ASDF:LOAD-OP` " in the form above.")
+
+(:h2 "Usage")
+
+(:p "The easiest way to use " ${package} " is to simply call " `ENCODE` ":")
+
+(:pre "CL-USER> (let ((message (coerce '(72 101 108 108 111)
+                                '(vector (unsigned-byte 8)))))
+           (binascii:encode message :base64))
+\"SGVsbG8=\")
+
+(:p "You can select whether the output is a string, as above, or the
+ASCII encoding in octets of the string:")
+
+(:pre "CL-USER> (let ((message (coerce '(72 101 108 108 111)
+                                '(vector (unsigned-byte 8)))))
+           (binascii:encode message :base64 :element-type '(unsigned-byte 8)))
+#(83 71 86 115 98 71 56 61)")
+
+(:p "The valid values for " `:ELEMENT-TYPE` " are " `BASE-CHAR` ", "
+`CHARACTER` ", and type specifiers that are type-equivalent to "
+`(UNSIGNED-BYTE 8) ".")
+
+(:p "You can also indicate " `:START` " and " `:END` " values, just like
+you would with any sequence function:")
+
+(:pre "CL-USER> (let ((message (coerce '(0 72 101 108 108 111)
+                                '(vector (unsigned-byte 8)))))
+           (binascii:encode message :base64 :start 1))
+\"SGVsbG8=\"
+CL-USER> (let ((message (coerce '(72 101 108 108 111 0)
+                                '(vector (unsigned-byte 8)))))
+           (binascii:encode message :base64 :end 5))
+\"SGVsbG8=\"")
+
+(:p "Note that you cannot encode strings; you first have to encode them
+as octets using your favorite encoding package.")
+
+(:p "You are also not limited to simple vectors.  For instance, on SBCL:")
+
+(:pre "CL-USER> (let ((message (make-array 5 :element-type '(unsigned-byte 8)
+                                    :fill-pointer 4 :initial-element 0)))
+           (binascii:encode message :base64))
+\"AAAAAA==\")
+
+(:p "The above form encodes a vector of four zeros in base64.")
+
+(:p "There is an symmteric function for decoding called, inventively
+enough, " `DECODE` ".  " `DECODE` " inherits much of its interface from
+" `ENCODE` " and so we won't review functionality already covered above.
+There are some new keyword arguments to " `DECODE` " that deserve
+special mention, though.")
+
+(:p "For base16 and base32 encodings only, the " `:CASE-FOLD` keyword
+argument may be " `T` " to indicate whether lowercase letters are
+considered equivalent to uppercase letters.  RFC 4648 defines base16 and
+base32 as using exclusively uppercase letters, but it may be useful to
+be lenient in what you accept.")
+
+(:p "For the base32 encoding only, the " `:MAP01` " keyword argument
+indicates whether the number 0 should be treated as though it were the
+character O.  Additionally, if " `:MAP01` " is the character I or the
+character L, those values indicate that the character 1 should be
+treated as though it were I or L, respectively.  Again, this behavior
+contradicts the RFC, but may be useful for leniency purposes.")
+
+(:p "For all other encodings, the " `:MAP01` " and " `:CASE-FOLD` "
+arguments are ignored.")

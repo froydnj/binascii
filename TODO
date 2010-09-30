@@ -1,6 +1,9 @@
 -*- mode: org -*-
 
 * add documentation for the library
+** DONE basic documentation for ENCODE/DECODE
+   CLOSED: [2010-09-29 Wed 22:40]
+** extended documentation on incremental encoding/decoding
 * add decoding gray streams
 Hard because we really want to decode groups at a time.  But ascii85 screws
 that paradigm up with variable-sized groups.
