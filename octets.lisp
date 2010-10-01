@@ -71,6 +71,11 @@
            (frob '(unsigned-byte 8) (fd-octets->octets/encode fd))))))))
 
 (defun encode (octets format &key (start 0) end (element-type 'base-char))
+  "Encode OCTETS between START and END into ASCII characters according to
+FORMAT.  Return a fresh vector containing the characters.  The type of
+the vector depends on ELEMENT-TYPE; if ELEMENT-TYPE is a subtype of
+CHARACTER, then a string is returned.  If ELEMENT-TYPE is type-equivalent
+to (UNSIGNED-BYTE 8), then an octet vector is returned."
   (encode-to-fresh-vector octets (find-encoder format) start end element-type))
 
 (defun encode-octets (destination octets format &key (start 0) end
@@ -145,6 +150,13 @@ any necessary padding required by FORMAT."
              (frob octets (fd-octets->octets/decode fd)))))))))
 
 (defun decode (string format &key (start 0) end case-fold map01 decoded-length)
+  "Decode the characters of STRING between START and END into octets
+according to FORMAT.  DECODED-LENGTH indicates the number of decoded
+octets to expect.  CASE-FOLD indicates whether to consider lowercase
+characters as equivalent to uppercase characters; it is only considered
+for certain values of FORMAT.  MAP01 indicates whether to consider #\\0
+equivalent to #\\O and possibly #\\1 as equivalent to #\\I or #\\L; see
+the documentation for further details."
   (decode-to-fresh-vector string (find-decoder format case-fold map01)
                           start end decoded-length))
 
