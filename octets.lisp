@@ -52,6 +52,7 @@
     (let* ((fd (state-descriptor state))
            (length (funcall (fd-encoded-length fd) (- end start))))
       (declare (type format-descriptor fd))
+      (declare (type index length))
       (flet ((frob (etype encode-fun)
                (let ((v (make-array length :element-type etype)))
                  (multiple-value-bind (input-index output-index)
@@ -131,6 +132,7 @@ any necessary padding required by FORMAT."
            (length (or decoded-length
                        (funcall (fd-decoded-length fd) (- end start)))))
       (declare (type format-descriptor fd))
+      (declare (type index length))
       (flet ((frob (v decode-fun)
                (multiple-value-bind (input-index output-index)
                    (funcall decode-fun state v input 0 length start end t)
