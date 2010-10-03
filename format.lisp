@@ -32,8 +32,10 @@
     (mapc #'add-with-specified-format format-names)
     format-names))
 
-(defmacro define-format (name descriptor-fun encoder-constructor
-                         decoder-constructor)
+(defmacro define-format (name &key
+                         ((:format-descriptor descriptor-fun))
+                         ((:encode-state-maker encoder-constructor))
+                         ((:decode-state-maker decoder-constructor)))
   (let ((*package* (find-package "BINASCII")))
     (let ((binascii-name (intern (symbol-name name)))
           (encode-fun (intern (format nil "ENCODE-~A" name)))

@@ -36,10 +36,11 @@
   (table *base64-encode-table* :read-only t :type (simple-array base-char (64)))
   (padding-remaining 0 :type (integer 0 3)))
 
-(declaim (inline base64-encoder))
+(declaim (notinline base64-encoder))
 (defun base64-encoder (state output input
                        output-index output-end
                        input-index input-end lastp converter)
+  (declare (type (or simple-string simple-octet-vector) output))
   (declare (type base64-encode-state state))
   (declare (type simple-octet-vector input))
   (declare (type index output-index output-end input-index input-end))
@@ -49,7 +50,7 @@
         (table (base64-encode-state-table state)))
     (declare (type index input-index output-index))
     (declare (type (unsigned-byte 16) bits))
-    (declare (type (unsigned-byte 8) n-bits))
+    (declare (type (integer 0 16) n-bits))
     (tagbody
      PAD-CHECK
        (when (base64-encode-state-finished-input-p state)
@@ -286,7 +287,11 @@
 (defun decoded-length-base64 (length)
   (* (ceiling length 4) 3))
 
-(define-format :base64 base64-format-descriptor
-  make-base64-encode-state make-base64-decode-state)
-(define-format :base64url base64-format-descriptor
-  make-base64url-encode-state make-base64url-decode-state)
+(define-format :base64
+  :format-descriptor base64-format-descriptor
+  :encode-state-maker make-base64-encode-state
+  :decode-state-maker make-base64-decode-state)
+(define-format :base64url
+  :format-descriptor base64-format-descriptor
+  :encode-state-maker make-base64url-encode-state
+  :decode-state-maker make-base64url-decode-state)

@@ -301,5 +301,7 @@
   ;; string are #\z.
   (* length 5))
 
-(define-format :ascii85 ascii85-format-descriptor
-  make-ascii85-encode-state make-ascii85-decode-state)
+(define-format :ascii85
+  :format-descriptor ascii85-format-descriptor
+  :encode-state-maker make-ascii85-encode-state
+  :decode-state-maker make-ascii85-decode-state)

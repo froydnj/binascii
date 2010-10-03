@@ -227,7 +227,11 @@
     (error "cannot decode an odd number of base16 characters"))
   (truncate length 2))
 
-(define-format :base16 base16-format-descriptor
-  make-base16-encode-state make-base16-decode-state)
-(define-format :hex base16-format-descriptor
-  make-hex-encode-state make-hex-decode-state)
+(define-format :base16
+  :format-descriptor base16-format-descriptor
+  :encode-state-maker make-base16-encode-state
+  :decode-state-maker make-base16-decode-state)
+(define-format :hex
+  :format-descriptor base16-format-descriptor
+  :encode-state-maker make-hex-encode-state
+  :decode-state-maker make-hex-decode-state)

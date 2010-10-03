@@ -279,7 +279,11 @@
 (defun decoded-length-base32 (length)
   (* (ceiling length 8) 5))
 
-(define-format :base32 base32-format-descriptor
-  make-base32-encode-state make-base32-decode-state)
-(define-format :base32hex base32-format-descriptor
-  make-base32hex-encode-state make-base32hex-decode-state)
+(define-format :base32
+  :format-descriptor base32-format-descriptor
+  :encode-state-maker make-base32-encode-state
+  :decode-state-maker make-base32-decode-state)
+(define-format :base32hex
+  :format-descriptor base32-format-descriptor
+  :encode-state-maker make-base32hex-encode-state
+  :decode-state-maker make-base32hex-decode-state)
