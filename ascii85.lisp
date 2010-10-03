@@ -5,19 +5,6 @@
 (defvar *ascii85-encode-table*
   #.(coerce "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstu" 'simple-base-string))
 
-(defun ascii85-format-descriptor ()
-  (let* ((cell (load-time-value (list nil)))
-         (fd (car cell)))
-    (if fd
-        fd
-        (setf (car cell)
-              (make-format-descriptor #'encoded-length/ascii85
-                                      #'octets->string/ascii85
-                                      #'octets->octets/encode/ascii85
-                                      #'decoded-length-ascii85
-                                      #'string->octets/ascii85
-                                      #'octets->octets/decode/ascii85)))))
-
 (defstruct (ascii85-encode-state
              (:include encode-state)
              (:copier nil)
@@ -33,7 +20,7 @@
   (table *ascii85-encode-table* :read-only t
          :type (simple-array base-char (85))))
 
-(defun encoded-length/ascii85 (count)
+(defun encoded-length-ascii85 (count)
   "Return the number of characters required to encode COUNT octets in Ascii85."
   (multiple-value-bind (q r) (truncate count 4)
     (let ((complete (* q 5)))
@@ -272,7 +259,6 @@
   (* length 5))
 
 (define-format :ascii85
-  :format-descriptor ascii85-format-descriptor
   :encode-state-maker make-ascii85-encode-state
   :decode-state-maker make-ascii85-decode-state
   :encode-length-fun encoded-length-ascii85

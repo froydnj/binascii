@@ -5,19 +5,6 @@
 (defvar *base85-encode-table*
   #.(coerce "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{|}~" 'simple-base-string))
 
-(defun base85-format-descriptor ()
-  (let* ((cell (load-time-value (list nil)))
-         (fd (car cell)))
-    (if fd
-        fd
-        (setf (car cell)
-              (make-format-descriptor #'encoded-length/base85
-                                      #'octets->string/base85
-                                      #'octets->octets/encode/base85
-                                      #'decoded-length-base85
-                                      #'string->octets/base85
-                                      #'octets->octets/decode/base85)))))
-
 (defstruct (base85-encode-state
              (:include encode-state)
              (:copier nil)
@@ -42,7 +29,7 @@
   (output-pending 0 :type (integer 0 5))
   (table *base85-encode-table* :read-only t :type (simple-array base-char (85))))
 
-(defun encoded-length/base85 (count)
+(defun encoded-length-base85 (count)
   "Return the number of characters required to encode COUNT octets in Base85."
   (* (ceiling count 4) 5))
 
@@ -252,7 +239,6 @@
     (* n-groups 4)))
 
 (define-format :base85
-  :format-descriptor base85-format-descriptor
   :encode-state-maker make-base85-encode-state
   :decode-state-maker make-base85-decode-state
   :encode-length-fun encoded-length-base85

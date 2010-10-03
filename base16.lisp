@@ -11,19 +11,6 @@
   (make-decode-table *base16-encode-table*))
 (declaim (type decode-table *base16-decode-table*))
 
-(defun base16-format-descriptor ()
-  (let* ((cell (load-time-value (list nil)))
-         (fd (car cell)))
-    (if fd
-        fd
-        (setf (car cell)
-              (make-format-descriptor #'encoded-length/base16
-                                      #'octets->string/base16
-                                      #'octets->octets/encode/base16
-                                      #'decoded-length-base16
-                                      #'string->octets/base16
-                                      #'octets->octets/decode/base16)))))
-
 (defstruct (base16-encode-state
              (:include encode-state)
              (:copier nil)
@@ -98,7 +85,7 @@
              (base16-encode-state-n-bits state) n-bits))
     (values input-index output-index)))
 
-(defun encoded-length/base16 (count)
+(defun encoded-length-base16 (count)
   "Return the number of characters required to encode COUNT octets in Base16."
   (* count 2))
 
@@ -200,7 +187,6 @@
   (truncate length 2))
 
 (define-format :base16
-  :format-descriptor base16-format-descriptor
   :encode-state-maker make-base16-encode-state
   :decode-state-maker make-base16-decode-state
   :encode-length-fun encoded-length-base16
@@ -208,7 +194,6 @@
   :encoder-fun base16-encoder
   :decoder-fun base16-decoder)
 (define-format :hex
-  :format-descriptor base16-format-descriptor
   :encode-state-maker make-hex-encode-state
   :decode-state-maker make-hex-decode-state
   :encode-length-fun encoded-length-base16

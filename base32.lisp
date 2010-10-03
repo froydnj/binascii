@@ -7,19 +7,6 @@
 (defvar *base32hex-encode-table*
   #.(coerce "0123456789ABCDEFGHIJKLMNOPQRSTUV" 'simple-base-string))
 
-(defun base32-format-descriptor ()
-  (let* ((cell (load-time-value (list nil)))
-         (fd (car cell)))
-    (if fd
-        fd
-        (setf (car cell)
-              (make-format-descriptor #'encoded-length/base32
-                                      #'octets->string/base32
-                                      #'octets->octets/encode/base32
-                                      #'decoded-length-base32
-                                      #'string->octets/base32
-                                      #'octets->octets/decode/base32)))))
-
 (defstruct (base32-encode-state
              (:include encode-state)
              (:copier nil)
@@ -242,7 +229,7 @@
              (base32-decode-state-padding-remaining state) padding-remaining))
     (values input-index output-index)))
 
-(defun encoded-length/base32 (count)
+(defun encoded-length-base32 (count)
   "Return the number of characters required to encode COUNT octets in Base32."
   (* (ceiling count 5) 8))
 
@@ -250,7 +237,6 @@
   (* (ceiling length 8) 5))
 
 (define-format :base32
-  :format-descriptor base32-format-descriptor
   :encode-state-maker make-base32-encode-state
   :decode-state-maker make-base32-decode-state
   :encode-length-fun encoded-length-base32
@@ -258,7 +244,6 @@
   :encoder-fun base32-encoder
   :decoder-fun base32-decoder)
 (define-format :base32hex
-  :format-descriptor base32-format-descriptor
   :encode-state-maker make-base32hex-encode-state
   :decode-state-maker make-base32hex-decode-state
   :encode-length-fun encoded-length-base32

@@ -33,7 +33,6 @@
     format-names))
 
 (defmacro define-format (name &key
-                         ((:format-descriptor descriptor-fun))
                          ((:encode-state-maker encoder-constructor))
                          ((:decode-state-maker decoder-constructor))
                          encode-length-fun decode-length-fun
@@ -50,6 +49,7 @@
          (intern-symbol (string &rest args)
            (intern (apply #'format nil string args) "BINASCII")))
     (let ((binascii-name (intern (symbol-name name)))
+          (descriptor-fun (intern-symbol "~A-FORMAT-DESCRIPTOR" name))
           (simple-encode-fun (intern-symbol "ENCODE-~A" name))
           (simple-decode-fun (intern-symbol "DECODE-~A" name))
           (octets->octets/encode (intern-symbol "OCTETS->OCTETS/ENCODE/~A" name))
@@ -58,6 +58,46 @@
           (string->octets (intern-symbol "STRING->OCTETS/~A" name)))
       ;; FORMAT needs a little help to do proper line wrapping.
       `(progn
+         (defun ,descriptor-fun ()
+           (flet ((,octets->octets/encode (state output input
+                                                 output-start output-end
+                                                 input-start input-end lastp)
+                    (declare (type simple-octet-vector output))
+                    (declare (optimize speed))
+                    (,encoder-fun state output input output-start output-end
+                                  input-start input-end lastp #'char-code))
+                  (,octets->string (state output input
+                                          output-start output-end
+                                          input-start input-end lastp)
+                    (declare (type simple-string output))
+                    (declare (optimize speed))
+                    (,encoder-fun state output input output-start output-end
+                                  input-start input-end lastp #'identity))
+                  (,string->octets (state output input
+                                          output-index output-end
+                                          input-index input-end lastp)
+                    (declare (type simple-string input))
+                    (declare (optimize speed))
+                    (,decoder-fun state output input output-index output-end
+                                  input-index input-end lastp #'char-code))
+                  (,octets->octets/decode (state output input
+                                                 output-index output-end
+                                                 input-index input-end lastp)
+                    (declare (type simple-octet-vector input))
+                    (declare (optimize speed))
+                    (,decoder-fun state output input output-index output-end
+                                  input-index input-end lastp #'identity)))
+             (let* ((cell (load-time-value (list nil)))
+                    (fd (car cell)))
+               (if fd
+                   fd
+                   (setf (car cell)
+                         (make-format-descriptor #',encode-length-fun
+                                                 #',octets->string
+                                                 #',octets->octets/encode
+                                                 #',decode-length-fun
+                                                 #',string->octets
+                                                 #',octets->octets/decode))))))
          (export ',simple-encode-fun)
          (defun ,simple-encode-fun (octets &key (start 0) end
                              (element-type 'base-char))
@@ -71,33 +111,6 @@
            (decode-to-fresh-vector string (funcall #',decoder-constructor
                                                    case-fold map01)
                                    start end decoded-length))
-         (defun ,octets->octets/encode (state output input
-                                        output-start output-end
-                                        input-start input-end lastp)
-           (declare (type simple-octet-vector output))
-           (declare (optimize speed))
-           (,encoder-fun state output input output-start output-end
-                         input-start input-end lastp #'char-code))
-         (defun ,octets->string (state output input
-                                 output-start output-end
-                                 input-start input-end lastp)
-           (declare (type simple-string output))
-           (,encoder-fun state output input output-start output-end
-                         input-start input-end lastp #'identity))
-         (defun ,string->octets (state output input
-                                 output-index output-end
-                                 input-index input-end lastp)
-           (declare (type simple-string input))
-           (declare (optimize speed))
-           (,decoder-fun state output input output-index output-end
-                         input-index input-end lastp #'char-code))
-         (defun ,octets->octets/decode (state output input
-                                        output-index output-end
-                                        input-index input-end lastp)
-           (declare (type simple-octet-vector input))
-           (declare (optimize speed))
-           (,decoder-fun state output input output-index output-end
-                         input-index input-end lastp #'identity))
          (register-descriptor-and-constructors '(,name ,binascii-name)
                                                (,descriptor-fun)
                                                (function ,encoder-constructor)

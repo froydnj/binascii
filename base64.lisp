@@ -8,19 +8,6 @@
 (defvar *base64url-encode-table*
   #.(coerce "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_" 'simple-base-string))
 
-(defun base64-format-descriptor ()
-  (let* ((cell (load-time-value (list nil)))
-         (fd (car cell)))
-    (if fd
-        fd
-        (setf (car cell)
-              (make-format-descriptor #'encoded-length/base64
-                                      #'octets->string/base64
-                                      #'octets->octets/encode/base64
-                                      #'decoded-length-base64
-                                      #'string->octets/base64
-                                      #'octets->octets/decode/base64)))))
-
 (defstruct (base64-encode-state
              (:include encode-state)
              (:copier nil)
@@ -141,7 +128,7 @@
              (base64-encode-state-n-bits state) n-bits))
     (values input-index output-index)))
 
-(defun encoded-length/base64 (count)
+(defun encoded-length-base64 (count)
   "Return the number of characters required to encode COUNT octets in Base64."
   (* (ceiling count 3) 4))
 
@@ -258,7 +245,6 @@
   (* (ceiling length 4) 3))
 
 (define-format :base64
-  :format-descriptor base64-format-descriptor
   :encode-state-maker make-base64-encode-state
   :decode-state-maker make-base64-decode-state
   :encode-length-fun encoded-length-base64
@@ -266,7 +252,6 @@
   :encoder-fun base64-encoder
   :decoder-fun base64-decoder)
 (define-format :base64url
-  :format-descriptor base64-format-descriptor
   :encode-state-maker make-base64url-encode-state
   :decode-state-maker make-base64url-decode-state
   :encode-length-fun encoded-length-base64
