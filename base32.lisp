@@ -110,22 +110,6 @@
              (base32-encode-state-n-bits state) n-bits))
     (values input-index output-index)))
 
-(defun octets->octets/encode/base32 (state output input
-                                     output-start output-end
-                                     input-start input-end lastp)
-  (declare (type simple-octet-vector output))
-  (declare (optimize speed))
-  (base32-encoder state output input output-start output-end
-                  input-start input-end lastp #'char-code))
-
-(defun octets->string/base32 (state output input
-                              output-start output-end
-                              input-start input-end lastp)
-  (declare (type simple-string output))
-  (declare (optimize speed))
-  (base32-encoder state output input output-start output-end
-                  input-start input-end lastp #'identity))
-
 (defvar *base32-decode-table* (make-decode-table *base32-encode-table*))
 (defvar *base32hex-decode-table* (make-decode-table *base32hex-encode-table*))
 (declaim (type decode-table *base32-decode-table* *base32hex-decode-table*))
@@ -258,20 +242,6 @@
              (base32-decode-state-padding-remaining state) padding-remaining))
     (values input-index output-index)))
 
-(defun string->octets/base32 (state output input
-                              output-index output-end
-                              input-index input-end lastp)
-  (declare (type simple-string input))
-  (base32-decoder state output input output-index output-end
-                  input-index input-end lastp #'char-code))
-
-(defun octets->octets/decode/base32 (state output input
-                                     output-index output-end
-                                     input-index input-end lastp)
-  (declare (type simple-octet-vector input))
-  (base32-decoder state output input output-index output-end
-                  input-index input-end lastp #'identity))
-
 (defun encoded-length/base32 (count)
   "Return the number of characters required to encode COUNT octets in Base32."
   (* (ceiling count 5) 8))
@@ -282,8 +252,16 @@
 (define-format :base32
   :format-descriptor base32-format-descriptor
   :encode-state-maker make-base32-encode-state
-  :decode-state-maker make-base32-decode-state)
+  :decode-state-maker make-base32-decode-state
+  :encode-length-fun encoded-length-base32
+  :decode-length-fun decoded-length-base32
+  :encoder-fun base32-encoder
+  :decoder-fun base32-decoder)
 (define-format :base32hex
   :format-descriptor base32-format-descriptor
   :encode-state-maker make-base32hex-encode-state
-  :decode-state-maker make-base32hex-decode-state)
+  :decode-state-maker make-base32hex-decode-state
+  :encode-length-fun encoded-length-base32
+  :decode-length-fun decoded-length-base32
+  :encoder-fun base32-encoder
+  :decoder-fun base32-decoder)

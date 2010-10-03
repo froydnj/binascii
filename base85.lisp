@@ -137,22 +137,6 @@
                (base85-encode-state-output-pending state) output-pending))
       (values input-index output-index))))
 
-(defun octets->octets/encode/base85 (state output input
-                                     output-start output-end
-                                     input-start input-end lastp)
-  (declare (type simple-octet-vector output))
-  (declare (optimize speed))
-  (base85-encoder state output input output-start output-end
-                  input-start input-end lastp #'char-code))
-
-(defun octets->string/base85 (state output input
-                              output-start output-end
-                              input-start input-end lastp)
-  (declare (type simple-string output))
-  (declare (optimize speed))
-  (base85-encoder state output input output-start output-end
-                  input-start input-end lastp #'identity))
-
 (defvar *base85-decode-table* (make-decode-table *base85-encode-table*))
 (declaim (type decode-table *base85-decode-table*))
 
@@ -261,20 +245,6 @@
              (base85-decode-state-output-pending state) output-pending))
     (values input-index output-index)))
 
-(defun string->octets/base85 (state output input
-                              output-index output-end
-                              input-index input-end lastp)
-  (declare (type simple-string input))
-  (base85-decoder state output input output-index output-end
-                  input-index input-end lastp #'char-code))
-
-(defun octets->octets/decode/base85 (state output input
-                                     output-index output-end
-                                     input-index input-end lastp)
-  (declare (type simple-octet-vector input))
-  (base85-decoder state output input output-index output-end
-                  input-index input-end lastp #'identity))
-
 (defun decoded-length-base85 (length)
   (multiple-value-bind (n-groups rem) (truncate length 5)
     (unless (zerop rem)
@@ -284,4 +254,8 @@
 (define-format :base85
   :format-descriptor base85-format-descriptor
   :encode-state-maker make-base85-encode-state
-  :decode-state-maker make-base85-decode-state)
+  :decode-state-maker make-base85-decode-state
+  :encode-length-fun encoded-length-base85
+  :decode-length-fun decoded-length-base85
+  :encoder-fun base85-encoder
+  :decoder-fun base85-decoder)

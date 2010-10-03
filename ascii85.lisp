@@ -143,22 +143,6 @@
                (ascii85-encode-state-output-pending state) output-pending))
       (values input-index output-index))))
 
-(defun octets->octets/encode/ascii85 (state output input
-                                      output-start output-end
-                                      input-start input-end lastp)
-  (declare (type simple-octet-vector output))
-  (declare (optimize speed))
-  (ascii85-encoder state output input output-start output-end
-                   input-start input-end lastp #'char-code))
-
-(defun octets->string/ascii85 (state output input
-                               output-start output-end
-                               input-start input-end lastp)
-  (declare (type simple-string output))
-  (declare (optimize speed))
-  (ascii85-encoder state output input output-start output-end
-                   input-start input-end lastp #'identity))
-
 (defvar *ascii85-decode-table* (make-decode-table *ascii85-encode-table*))
 (declaim (type decode-table *ascii85-decode-table*))
 
@@ -281,20 +265,6 @@
              (ascii85-decode-state-output-pending state) output-pending))
     (values input-index output-index)))
 
-(defun string->octets/ascii85 (state output input
-                              output-index output-end
-                              input-index input-end lastp)
-  (declare (type simple-string input))
-  (ascii85-decoder state output input output-index output-end
-                   input-index input-end lastp #'char-code))
-
-(defun octets->octets/decode/ascii85 (state output input
-                                     output-index output-end
-                                     input-index input-end lastp)
-  (declare (type simple-octet-vector input))
-  (ascii85-decoder state output input output-index output-end
-                   input-index input-end lastp #'identity))
-
 (defun decoded-length-ascii85 (length)
   ;; FIXME: There's nothing smart we can do without scanning the string.
   ;; We have to assume the worst case, that all the characters in the
@@ -304,4 +274,8 @@
 (define-format :ascii85
   :format-descriptor ascii85-format-descriptor
   :encode-state-maker make-ascii85-encode-state
-  :decode-state-maker make-ascii85-decode-state)
+  :decode-state-maker make-ascii85-decode-state
+  :encode-length-fun encoded-length-ascii85
+  :decode-length-fun decoded-length-ascii85
+  :encoder-fun ascii85-encoder
+  :decoder-fun ascii85-decoder)

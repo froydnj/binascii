@@ -141,22 +141,6 @@
              (base64-encode-state-n-bits state) n-bits))
     (values input-index output-index)))
 
-(defun octets->octets/encode/base64 (state output input
-                                     output-start output-end
-                                     input-start input-end lastp)
-  (declare (type simple-octet-vector output))
-  (declare (optimize speed))
-  (base64-encoder state output input output-start output-end
-                  input-start input-end lastp #'char-code))
-
-(defun octets->string/base64 (state output input
-                              output-start output-end
-                              input-start input-end lastp)
-  (declare (type simple-string output))
-  (declare (optimize speed))
-  (base64-encoder state output input output-start output-end
-                  input-start input-end lastp #'identity))
-
 (defun encoded-length/base64 (count)
   "Return the number of characters required to encode COUNT octets in Base64."
   (* (ceiling count 3) 4))
@@ -270,28 +254,22 @@
              (base64-decode-state-padding-remaining state) padding-remaining))
     (values input-index output-index)))
 
-(defun string->octets/base64 (state output input
-                              output-index output-end
-                              input-index input-end lastp)
-  (declare (type simple-string input))
-  (base64-decoder state output input output-index output-end
-                  input-index input-end lastp #'char-code))
-
-(defun octets->octets/decode/base64 (state output input
-                                     output-index output-end
-                                     input-index input-end lastp)
-  (declare (type simple-octet-vector input))
-  (base64-decoder state output input output-index output-end
-                  input-index input-end lastp #'identity))
-
 (defun decoded-length-base64 (length)
   (* (ceiling length 4) 3))
 
 (define-format :base64
   :format-descriptor base64-format-descriptor
   :encode-state-maker make-base64-encode-state
-  :decode-state-maker make-base64-decode-state)
+  :decode-state-maker make-base64-decode-state
+  :encode-length-fun encoded-length-base64
+  :decode-length-fun decoded-length-base64
+  :encoder-fun base64-encoder
+  :decoder-fun base64-decoder)
 (define-format :base64url
   :format-descriptor base64-format-descriptor
   :encode-state-maker make-base64url-encode-state
-  :decode-state-maker make-base64url-decode-state)
+  :decode-state-maker make-base64url-decode-state
+  :encode-length-fun encoded-length-base64
+  :decode-length-fun decoded-length-base64
+  :encoder-fun base64-encoder
+  :decoder-fun base64-decoder)

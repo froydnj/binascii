@@ -102,20 +102,6 @@
   "Return the number of characters required to encode COUNT octets in Base16."
   (* count 2))
 
-(defun octets->octets/encode/base16 (state output input
-                                     output-start output-end
-                                     input-start input-end lastp)
-  (declare (type simple-octet-vector output))
-  (base16-encoder state output input output-start output-end
-                  input-start input-end lastp #'char-code))
-
-(defun octets->string/base16 (state output input
-                              output-start output-end
-                              input-start input-end lastp)
-  (declare (type simple-string output))
-  (base16-encoder state output input output-start output-end
-                  input-start input-end lastp #'identity))
-
 (defun base16-decode-table (case-fold)
   (if case-fold
       (case-fold-decode-table *base16-decode-table*
@@ -208,20 +194,6 @@
              (base16-decode-state-bits state) bits))
     (values input-index output-index)))
 
-(defun string->octets/base16 (state output input
-                              output-index output-end
-                              input-index input-end lastp)
-  (declare (type simple-string input))
-  (base16-decoder state output input output-index output-end
-                  input-index input-end lastp #'char-code))
-
-(defun octets->octets/decode/base16 (state output input
-                                     output-index output-end
-                                     input-index input-end lastp)
-  (declare (type simple-octet-vector input))
-  (base16-decoder state output input output-index output-end
-                  input-index input-end lastp #'identity))
-
 (defun decoded-length-base16 (length)
   (unless (evenp length)
     (error "cannot decode an odd number of base16 characters"))
@@ -230,8 +202,16 @@
 (define-format :base16
   :format-descriptor base16-format-descriptor
   :encode-state-maker make-base16-encode-state
-  :decode-state-maker make-base16-decode-state)
+  :decode-state-maker make-base16-decode-state
+  :encode-length-fun encoded-length-base16
+  :decode-length-fun decoded-length-base16
+  :encoder-fun base16-encoder
+  :decoder-fun base16-decoder)
 (define-format :hex
   :format-descriptor base16-format-descriptor
   :encode-state-maker make-hex-encode-state
-  :decode-state-maker make-hex-decode-state)
+  :decode-state-maker make-hex-decode-state
+  :encode-length-fun encoded-length-base16
+  :decode-length-fun decoded-length-base16
+  :encoder-fun base16-encoder
+  :decoder-fun base16-decoder)
