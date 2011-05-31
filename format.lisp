@@ -41,8 +41,8 @@
                (declare (optimize (debug 3)))
                (loop with docstring = (apply #'format nil args)
                      for start = 0 then (when pos (1+ pos))
+                     for pos = (and start (position #\Space docstring :start start))
                      while start
-                     for pos = (position #\Space docstring :start start)
                      collect (subseq docstring start pos) into words
                      finally (return (format nil "~{~<~%~1,76:;~A~>~^ ~}"
                                              words))))
