@@ -47,7 +47,8 @@
                      finally (return (format nil "~{~<~%~1,76:;~A~>~^ ~}"
                                              words))))
          (intern-symbol (string &rest args)
-           (intern (apply #'format nil string args) "BINASCII")))
+           (intern (with-standard-io-syntax (apply #'format nil string args))
+                   (find-package '#:binascii))))
     (let ((binascii-name (intern (symbol-name name)))
           (descriptor-fun (intern-symbol "~A-FORMAT-DESCRIPTOR" name))
           (simple-encode-fun (intern-symbol "ENCODE-~A" name))
