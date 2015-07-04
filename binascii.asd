@@ -10,6 +10,7 @@
   :author "Nathan Froyd <froydnj@gmail.com>"
   :maintainer "Nathan Froyd <froydnj@gmail.com>"
   :description "A library of ASCII encoding schemes for binary data"
+  :license "BSD-style (http://opensource.org/licenses/BSD-3-Clause)"
   :components ((:static-file "LICENSE")
                (:file "package")
                (:file "types" :depends-on ("package"))
